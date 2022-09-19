@@ -153,7 +153,7 @@ def government(par,ini,ss,sol):
             B_G[t] = ss.B_G
         else:
             B_G[t]= (1+r_b)**(-t)*(G[t]-T[t]+B_G_lead[t]) # GIBC 
-    assert if not B_G[par.T] <= 0, f"No-Ponzi-game condition not satisfied {B_G_lead}" #No-ponzi-game
+    # assert if not B_G[par.T] <= 0, f"No-Ponzi-game condition not satisfied {B_G_lead}" #No-ponzi-game
 
     # debt target
     # B_G[] = np.sum()    
