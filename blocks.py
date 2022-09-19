@@ -146,16 +146,9 @@ def government(par,ini,ss,sol):
     # evaluations 
     T = tau * w*L # tax income 
     
-    B_G_lead = lead(B_G,ss.B_G)
-
-    for t in range(T):
-        if t == par.T-1:
-            B_G[t] = ss.B_G
-        else:
-            B_G[t]= (1+r_b)**(-t)*(G[t]-T[t]+B_G_lead[t]) # GIBC 
-
-    # debt target
-    # B_G[] = np.sum()    
+    B_G_lag = lag(ss.B_G,B_G)
+    
+    B_G[:]= (1+r_b)*(B_G_lag) - T + G # DGBC
     
 
 
@@ -408,6 +401,7 @@ def goods_market_clearing(par,ini,ss,sol):
     C_Y = sol.C_Y
     I_Y = sol.I_Y
     X_Y = sol.X_Y
+    G = sol.G
 
     # outputs
     M = sol.M
@@ -418,4 +412,4 @@ def goods_market_clearing(par,ini,ss,sol):
     # evalautions
     M[:] = C_M + I_M + X_M
     
-    mkt_clearing[:] = Y - (C_Y + I_Y + X_Y)
+    mkt_clearing[:] = Y - (C_Y + I_Y + X_Y + G)
