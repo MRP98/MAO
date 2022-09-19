@@ -130,7 +130,7 @@ def household_search(par,ini,ss,sol):
 def government(par,ini,ss,sol):
     # inputs
     r_b = par.r_b # budget debt 
-    tau = sol.tau # tax rate, it is endogenous, thus "sol"
+    tau = ss.tau # tax rate, it is endogenous, thus "ss", but behaves exogenous 
     r_firm = par.r_firm # discounting interest rate
 
     L = sol.L # Labor force
@@ -153,7 +153,6 @@ def government(par,ini,ss,sol):
             B_G[t] = ss.B_G
         else:
             B_G[t]= (1+r_b)**(-t)*(G[t]-T[t]+B_G_lead[t]) # GIBC 
-    assert if not B_G[par.T] <= 0, f"No-Ponzi-game condition not satisfied {B_G_lead}" #No-ponzi-game
 
     # debt target
     # B_G[] = np.sum()    
