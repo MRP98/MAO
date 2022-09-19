@@ -44,11 +44,13 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.P_Y = 1.0
     ss.P_F = 1.0
     ss.P_M_C = 1.0
+    ss.P_M_G = 1.0
     ss.P_M_I = 1.0
     ss.P_M_X = 1.0
     
     # b. pricing in repacking firms
     ss.P_C = blocks.CES_P(ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C)
+    ss.P_G = blocks.CES_P(ss.P_M_G, ss.P_Y, par.mu_M_G, par.sigma_G)
     ss.P_I = blocks.CES_P(ss.P_M_I,ss.P_Y,par.mu_M_I,par.sigma_I)
     ss.P_X = blocks.CES_P(ss.P_M_X,ss.P_Y,par.mu_M_X,par.sigma_X)
 
@@ -103,6 +105,13 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.ell = :.2f}')
     if do_print: print(f'{ss.w = :.2f}')
 
+    # g. government
+    ss.B = 0 # debt in ss is 0
+    ss.G = 100 # this is an arbitrary number
+    ss.tau = (par.r_B*ss.B+ss.P_G*ss.G)/(ss.w*ss.L) # based on expensives = finance in period t
+    if do_print: print(f'{ss.G = :.2f}')
+    if do_print: print(f'{ss.tau = :.2f}')
+
     # g. household behavior
     if do_print: print(f'solving for household behavior:',end='')
 
@@ -130,21 +139,19 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.Y = :.2f}')
 
     # k. CES demand in packing firms
-    ss.C_M = par.mu_M_C*ss.C
-    ss.C_Y = (1-par.mu_M_C)*ss.C
+    ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C,ss.C, par.sigma_C)
+    ss.C_Y = blocks.CES_demand((1-par.mu_M_C),ss.P_Y,ss.P_C,ss.C, par.sigma_C) 
+    
+    ss.G_M = blocks.CES_demand(par.mu_M_G,ss.P_M_G,ss.P_G,ss.G, par.sigma_G)   
+    ss.G_Y = blocks.CES_demand((1-par.mu_M_G),ss.P_Y,ss.P_G,ss.G, par.sigma_G)
 
-    ss.I_M = par.mu_M_I*ss.I
-    ss.I_Y = (1-par.mu_M_I)*ss.I
+    ss.I_M = blocks.CES_demand(par.mu_M_I,ss.P_M_I,ss.P_I,ss.I, par.sigma_I)     
+    ss.I_Y = blocks.CES_demand((1-par.mu_M_I),ss.P_Y,ss.P_I,ss.I, par.sigma_I)    
 
     # m. market clearing
-    ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C,ss.C,par.sigma_C)
-    ss.I_M = blocks.CES_demand(par.mu_M_I,ss.P_M_I,ss.P_I,ss.I,par.sigma_I)
-
-    ss.C_Y = blocks.CES_demand(1-par.mu_M_C,ss.P_Y,ss.P_C,ss.C,par.sigma_C)
-    ss.I_Y = blocks.CES_demand(1-par.mu_M_I,ss.P_Y,ss.P_I,ss.I,par.sigma_I)
     X_Y = blocks.CES_demand(1-par.mu_M_X,ss.P_Y,ss.P_X,1.0,par.sigma_X)
 
-    ss.X_Y = ss.Y - (ss.C_Y+ss.I_Y)
+    ss.X_Y = ss.Y - (ss.C_Y+ss.I_Y+ss.G_Y)
     ss.chi = ss.X_Y/X_Y
     ss.X_M = blocks.CES_demand(par.mu_M_X,ss.P_M_X,ss.P_X,ss.X,par.sigma_X)
     

@@ -127,6 +127,41 @@ def household_search(par,ini,ss,sol):
             L_a[a,t] = L_ubar_a[a,t] + m_s[t]*S_a[a,t]
 
 @nb.njit
+def government(par,ini,ss,sol):
+    # inputs
+    r_b = par.r_b # budget debt 
+    tau = sol.tau # tax rate, it is endogenous, thus "sol"
+    r_firm = par.r_firm # discounting interest rate
+
+    L = sol.L # Labor force
+    w = sol.w # wage 
+
+    G = sol.G # government spending 
+    P_G = sol.P_G # price on government spending 
+
+    # outputs
+    T = sol.T
+    B_G = sol.B_G
+
+    # evaluations 
+    T = tau * w*L # tax income 
+    
+    B_G_lead = lead(B_G,ss.B_G)
+
+    for t in range(T):
+        if t == par.T-1:
+            B_G[t] = ss.B_G
+        else:
+            B_G[t]= (1+r_b)**(-t)*(G[t]-T[t]+B_G_lead[t]) # GIBC 
+    assert if not B_G[par.T] <= 0, f"No-Ponzi-game condition not satisfied {B_G_lead}" #No-ponzi-game
+
+    # debt target
+    # B_G[] = np.sum()    
+    
+
+
+
+@nb.njit
 def labor_agency(par,ini,ss,sol):
 
     # inputs
