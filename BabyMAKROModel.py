@@ -102,7 +102,7 @@ class BabyMAKROModelClass(EconModelClass):
             'mkt_clearing',            
             'MPL',
             'P_C',
-            'P_G'
+            'P_G',
             'P_F',
             'P_I',
             'P_M_C',
