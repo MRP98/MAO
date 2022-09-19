@@ -166,10 +166,10 @@ class BabyMAKROModelClass(EconModelClass):
 
         # e. government 
         par.r_b = 0.04 # the rate of return on government debt
-        #par.tau = 0.4 # the tax rate on labor, exogeneous
-        par.t_b = 10 # number of years with exogenous tax rate, which we can set
-        par.delta_B = 5 # number of adjustment years
-        par.epsilon_B = 0.4 # 
+        #par.tau_tilde = 0.4 # the tax rate on labor, exogeneous
+        #par.t_b = 10 # number of years with exogenous tax rate, which we can set
+        #par.delta_B = 5 # number of adjustment years
+        #par.epsilon_B = 0.4 # 
 
 
         # f. repacking
