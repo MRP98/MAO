@@ -147,7 +147,7 @@ def government(par,ini,ss,sol):
     B_G_lag = lag(ss.B_G,B_G)
     
     B_G[:]= (1+par.r_b)*(B_G_lag) - Tax + G # DGBC
-    
+
 
 
 
