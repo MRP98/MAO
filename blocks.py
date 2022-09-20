@@ -129,10 +129,6 @@ def household_search(par,ini,ss,sol):
 @nb.njit
 def government(par,ini,ss,sol):
     # inputs
-    r_b = par.r_b # budget debt 
-    tau = ss.tau # tax rate, it is endogenous, thus "ss", but behaves exogenous 
-    r_firm = par.r_firm # discounting interest rate
-
     L = sol.L # Labor force
     w = sol.w # wage 
 
@@ -140,15 +136,17 @@ def government(par,ini,ss,sol):
     P_G = sol.P_G # price on government spending 
 
     # outputs
-    T = sol.T
+    tau = sol.tau # tax rate, it is endogenous, thus "ss", but behaves exogenous 
+    Tax = sol.Tax
     B_G = sol.B_G
 
     # evaluations 
-    T = tau * w*L # tax income 
+    tau[:] = (ss.G+par.r_b*ss.B_G)/(ss.w*ss.L)
+    Tax[:] = tau * w*L # tax income 
     
     B_G_lag = lag(ss.B_G,B_G)
     
-    B_G[:]= (1+r_b)*(B_G_lag) - T + G # DGBC
+    B_G[:]= (1+par.r_b)*(B_G_lag) - Tax + G # DGBC
     
 
 

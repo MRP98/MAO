@@ -42,6 +42,7 @@ def find_ss(par,ss,m_s,do_print=True):
 
     # a. price noramlizations
     ss.P_Y = 1.0
+    ss.P_G = 1.0 # this is temporary
     ss.P_F = 1.0
     ss.P_M_C = 1.0
     ss.P_M_G = 1.0
@@ -106,9 +107,9 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.w = :.2f}')
 
     # g. government
-    ss.B = 10 # debt in ss is 0, arbitrary number 
-    ss.G = 100 # this is an arbitrary number
-    ss.tau = (par.r_b*ss.B+ss.P_G*ss.G)/(ss.w*ss.L) # based on expenses = income in period t, no change in debt in ss
+    ss.B_G = float(10) # debt in ss is 0, arbitrary number 
+    ss.G = float(100) # this is an arbitrary number
+    ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.w*ss.L) # based on expenses = income in period t, no change in debt in ss
     if do_print: print(f'{ss.G = :.2f}')
     if do_print: print(f'{ss.tau = :.2f}')
 
@@ -142,8 +143,8 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C,ss.C, par.sigma_C)
     ss.C_Y = blocks.CES_demand((1-par.mu_M_C),ss.P_Y,ss.P_C,ss.C, par.sigma_C) 
     
-    ss.G_M = blocks.CES_demand(par.mu_M_G,ss.P_M_G,ss.P_G,ss.G, par.sigma_G)   
-    ss.G_Y = blocks.CES_demand((1-par.mu_M_G),ss.P_Y,ss.P_G,ss.G, par.sigma_G)
+    # ss.G_M = blocks.CES_demand(par.mu_M_G,ss.P_M_G,ss.P_G,ss.G, par.sigma_G)   
+    # ss.G_Y = blocks.CES_demand((1-par.mu_M_G),ss.P_Y,ss.P_G,ss.G, par.sigma_G)
 
     ss.I_M = blocks.CES_demand(par.mu_M_I,ss.P_M_I,ss.P_I,ss.I, par.sigma_I)     
     ss.I_Y = blocks.CES_demand((1-par.mu_M_I),ss.P_Y,ss.P_I,ss.I, par.sigma_I)    
@@ -151,7 +152,7 @@ def find_ss(par,ss,m_s,do_print=True):
     # m. market clearing
     X_Y = blocks.CES_demand(1-par.mu_M_X,ss.P_Y,ss.P_X,1.0,par.sigma_X)
 
-    ss.X_Y = ss.Y - (ss.C_Y+ss.I_Y+ss.G_Y)
+    ss.X_Y = ss.Y - (ss.C_Y+ss.I_Y+ss.G)
     ss.chi = ss.X_Y/X_Y
     ss.X_M = blocks.CES_demand(par.mu_M_X,ss.P_M_X,ss.P_X,ss.X,par.sigma_X)
     

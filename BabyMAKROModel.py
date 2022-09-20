@@ -116,7 +116,7 @@ class BabyMAKROModelClass(EconModelClass):
             'r_K',
             'r_b',
             'S',
-            'T',
+            'Tax',
             'tau',
             'v',
             'w_ast',
