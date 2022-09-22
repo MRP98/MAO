@@ -289,6 +289,7 @@ def households_consumption(par,ini,ss,sol):
     P_C = sol.P_C
     w = sol.w
     Bq = sol.Bq
+    tau = sol.tau
 
     # outputs
     pi_hh = sol.pi_hh
@@ -342,7 +343,7 @@ def households_consumption(par,ini,ss,sol):
             else:
                 B_a_lag = B_a[a-1,t-1]
             
-            B_a[a,t] = (1+par.r_hh)*B_a_lag + w[t]*L_a[a,t] + Bq[t]/par.A - P_C[t]*C_a[a,t]
+            B_a[a,t] = (1+par.r_hh)*B_a_lag + (1-tau[t]) * w[t]*L_a[a,t] + Bq[t]/par.A - P_C[t]*C_a[a,t]
 
     # aggregate
     C[:] = np.sum(C_a,axis=0)
