@@ -42,6 +42,17 @@ def CES_P(Pi,Pj,mui,sigma):
     return (part_i+part_j)**(1/(1-sigma))
 
 @nb.njit
+def CES_P_mp(eta,Pi,Pj,mui,sigma):
+
+    muj = 1-mui
+    markup = eta/(eta-1)
+    
+    part_i = mui*Pi**(1-sigma)
+    part_j = muj*Pj**(1-sigma)
+
+    return markup*(part_i+part_j)**(1/(1-sigma))
+
+@nb.njit
 def adj_cost(iota,K_lag,Psi_0,delta_K):
 
     return 0.5*Psi_0*(iota/K_lag-delta_K)**2*K_lag
@@ -234,7 +245,7 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_X = sol.P_X
     P_G = sol.P_G
 
-    P_C[:] = CES_P(P_M_C,P_Y,par.mu_M_C,par.sigma_C)
+    P_C[:] = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C)
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
     P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G)

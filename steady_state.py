@@ -49,8 +49,8 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.P_M_X = 1.0
     
     # b. pricing in repacking firms
-    ss.P_C = blocks.CES_P(ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C)
-    ss.P_G = blocks.CES_P(ss.P_M_G,ss.P_Y,par.mu_M_G,par.sigma_G)
+    ss.P_C = blocks.CES_P_mp(par.eta_C,ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C)
+    ss.P_G = blocks.CES_P(ss.P_M_G, ss.P_Y, par.mu_M_G, par.sigma_G)
     ss.P_I = blocks.CES_P(ss.P_M_I,ss.P_Y,par.mu_M_I,par.sigma_I)
     ss.P_X = blocks.CES_P(ss.P_M_X,ss.P_Y,par.mu_M_X,par.sigma_X)
 

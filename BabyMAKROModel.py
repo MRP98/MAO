@@ -185,6 +185,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_I = 1.5 # substitution
         par.mu_M_X = 0.40 # weight on imports in X
         par.sigma_X = 1.5 # substitution
+        par.eta_C = 10
 
         # g. foreign
         par.sigma_F = 1.5 # substitution in export demand
