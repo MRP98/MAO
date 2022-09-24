@@ -183,7 +183,8 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_I = 1.5 # substitution
         par.mu_M_X = 0.40 # weight on imports in X
         par.sigma_X = 1.5 # substitution
-        par.eta_C = 10
+        par.eta_C = 10 # Price elasticity of demand for consumption. Higher values implies a more competitive market and a lower markup.
+        par.flex = 0.5 # Share of repacking firms with flexible prices.
 
         # g. foreign
         par.sigma_F = 1.5 # substitution in export demand

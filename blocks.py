@@ -9,6 +9,12 @@ import numba as nb
 def lag(ssvalue,pathvalue):
     return np.hstack((np.array([ssvalue]),pathvalue[:-1]))
 
+# nth lag of variabel. If the variabel is y and n = 5, then y_{t-5} is returned.
+@nb.njit
+def lag_n(ssvalue,pathvalue,n=1):
+    x = np.arange(n)
+    return np.hstack((np.full_like(x,ssvalue),pathvalue[:-n]))
+
 @nb.njit
 def lead(pathvalue,ssvalue):
     return np.hstack((pathvalue[1:],np.array([ssvalue])))
@@ -159,9 +165,6 @@ def government(par,ini,ss,sol):
     
     B_G[:]= (1+par.r_b)*(B_G_lag) - Tax + G # DGBC
 
-
-
-
 @nb.njit
 def labor_agency(par,ini,ss,sol):
 
@@ -238,12 +241,15 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_M_I = sol.P_M_I
     P_M_X = sol.P_M_X
 
+    P_M_C_lag = lag_n(ss.P_M_C,P_M_C,5)
+    P_Y_lag = lag_n(ss.P_Y,P_Y,5)
+
     # outputs
     P_C = sol.P_C
     P_I = sol.P_I
     P_X = sol.P_X
 
-    P_C[:] = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C)
+    P_C[:] = par.flex * CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C) + (1-par.flex) * CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C)
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
 
