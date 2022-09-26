@@ -241,15 +241,21 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_M_I = sol.P_M_I
     P_M_X = sol.P_M_X
 
-    P_M_C_lag = lag_n(ss.P_M_C,P_M_C,5)
-    P_Y_lag = lag_n(ss.P_Y,P_Y,5)
-
     # outputs
     P_C = sol.P_C
     P_I = sol.P_I
     P_X = sol.P_X
 
-    P_C[:] = par.flex * CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C) + (1-par.flex) * CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C)
+    # rigidity in price on consumption goods
+    P_C_lag_sum = np.zeros(par.T)
+
+    for i in np.arange(50):
+        P_Y_lag = lag_n(ss.P_Y,P_Y,i+1)
+        P_M_C_lag = lag_n(ss.P_M_C,P_M_C,i+1)
+        P_C_lag = CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C)*(par.flex)**(i+2)
+        P_C_lag_sum = np.add(P_C_lag_sum,P_C_lag)
+
+    P_C[:] = par.flex * CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C) + P_C_lag_sum 
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
 
