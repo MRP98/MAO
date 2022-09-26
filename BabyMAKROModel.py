@@ -88,6 +88,8 @@ class BabyMAKROModelClass(EconModelClass):
             'FOC_C',
             'FOC_capital_agency',
             'FOC_K_ell',
+            'G_M',
+            'G_Y',
             'G',
             'I_M',
             'I_Y',

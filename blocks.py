@@ -240,11 +240,13 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_M_C = sol.P_M_C
     P_M_I = sol.P_M_I
     P_M_X = sol.P_M_X
+    P_M_G = sol.P_M_G
 
     # outputs
     P_C = sol.P_C
     P_I = sol.P_I
     P_X = sol.P_X
+    P_G = sol.P_G
 
     # rigidity in price on consumption goods
     P_C_lag_sum = np.zeros(par.T)
@@ -258,6 +260,7 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_C[:] = par.flex * CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C) + P_C_lag_sum 
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
+    P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G)
 
 @nb.njit
 def foreign_economy(par,ini,ss,sol):
@@ -392,23 +395,31 @@ def repacking_firms_components(par,ini,ss,sol):
     P_X = sol.P_X
     X = sol.X    
 
+    P_M_G = sol.P_M_G
+    P_G = sol.P_G
+    G = sol.G
+
     # outputs
     C_M = sol.C_M
     I_M = sol.I_M
     X_M = sol.X_M
+    G_M = sol.G_M
 
     C_Y = sol.C_Y
     I_Y = sol.I_Y
     X_Y = sol.X_Y
+    G_Y = sol.G_Y
 
     # evaluations
     C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C,C,par.sigma_C)
     I_M[:] = CES_demand(par.mu_M_I,P_M_I,P_I,I,par.sigma_I)
     X_M[:] = CES_demand(par.mu_M_X,P_M_X,P_X,X,par.sigma_X)
+    G_M[:] = CES_demand(par.mu_M_G,P_M_G,P_G,G,par.sigma_X)
 
     C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C,C,par.sigma_C)
     I_Y[:] = CES_demand(1-par.mu_M_I,P_Y,P_I,I,par.sigma_I)
     X_Y[:] = CES_demand(1-par.mu_M_X,P_Y,P_X,X,par.sigma_X)
+    G_Y[:] = CES_demand(1-par.mu_M_G,P_Y,P_G,G,par.sigma_G)
     
 @nb.njit
 def goods_market_clearing(par,ini,ss,sol):
@@ -419,11 +430,12 @@ def goods_market_clearing(par,ini,ss,sol):
     C_M = sol.C_M
     I_M = sol.I_M
     X_M = sol.X_M
+    G_M = sol.G_M
 
     C_Y = sol.C_Y
     I_Y = sol.I_Y
     X_Y = sol.X_Y
-    G = sol.G
+    G_Y = sol.G_Y
 
     # outputs
     M = sol.M
@@ -432,6 +444,6 @@ def goods_market_clearing(par,ini,ss,sol):
     mkt_clearing = sol.mkt_clearing
 
     # evalautions
-    M[:] = C_M + I_M + X_M
+    M[:] = C_M + I_M + X_M + G_M
     
-    mkt_clearing[:] = Y - (C_Y + I_Y + X_Y + G)
+    mkt_clearing[:] = Y - (C_Y + I_Y + X_Y + G_Y)
