@@ -153,17 +153,14 @@ def government(par,ini,ss,sol):
     P_G = sol.P_G # price on government spending 
 
     # outputs
-    tau = sol.tau # tax rate, it is endogenous, thus "ss", but behaves exogenous 
     Tax = sol.Tax
+    tau = sol.tau
     B_G = sol.B_G
 
     # evaluations 
-    tau[:] = (ss.G+par.r_b*ss.B_G)/(ss.w*ss.L)
-    Tax[:] = tau * w*L # tax income 
+    B_G_lag = lag_n(ss.B_G,B_G, n=1)
     
-    B_G_lag = lag(ss.B_G,B_G)
-    
-    B_G[:]= (1+par.r_b)*(B_G_lag) - Tax + G # DGBC
+    B_G[:]= (1+par.r_b)*B_G_lag - tau * w*L + P_G*G # DGBC
 
 @nb.njit
 def labor_agency(par,ini,ss,sol):
