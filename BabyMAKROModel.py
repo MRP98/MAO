@@ -156,6 +156,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.r_hh = 0.04 # nominal return rate
         par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities
         par.w_U = 0.25 # outside option in bargaining
+        par.yps = 0.80 # share of optimizing households
 
         # b. production firm
         par.r_firm = 0.04 # internal rate of return

@@ -153,7 +153,6 @@ def government(par,ini,ss,sol):
     P_G = sol.P_G # price on government spending 
 
     # outputs
-    Tax = sol.Tax
     tau = sol.tau
     B_G = sol.B_G
 
@@ -308,6 +307,7 @@ def capital_agency(par,ini,ss,sol):
 def households_consumption(par,ini,ss,sol):    
 
     # inputs
+    L = sol.L
     L_a = sol.L_a
     P_C = sol.P_C
     w = sol.w
@@ -366,10 +366,10 @@ def households_consumption(par,ini,ss,sol):
             else:
                 B_a_lag = B_a[a-1,t-1]
             
-            B_a[a,t] = (1+par.r_hh)*B_a_lag + (1-tau[t]) * w[t]*L_a[a,t] + Bq[t]/par.A - P_C[t]*C_a[a,t]
+            B_a[a,t] = (1+par.r_hh)*B_a_lag + par.yps*(1-tau[t]) * w[t]*L_a[a,t] + Bq[t]/par.A - P_C[t]*C_a[a,t]
 
     # aggregate
-    C[:] = np.sum(C_a,axis=0)
+    C[:] = np.sum(C_a,axis=0) + (1-par.yps)*(1-tau[t])*w[t]*L[t]
     B[:] = np.sum(B_a,axis=0)  
 
     # matching Bq
