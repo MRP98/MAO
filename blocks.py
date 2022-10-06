@@ -59,6 +59,32 @@ def CES_P_mp(eta,Pi,Pj,mui,sigma):
     return markup*(part_i+part_j)**(1/(1-sigma))
 
 @nb.njit
+def CES_P_mp2(eta,Pi,Pj,mui,sigma,P,X,iota,ss,sol,beta):
+
+    muj = 1-mui
+    markup = eta/(eta-1)
+    
+    part_i = mui*Pi**(1-sigma)
+    part_j = muj*Pj**(1-sigma)
+
+    ss_P = ss.P_C
+    ss_X = ss.C
+
+    P_lag1 = lag_n(ss_P,P,1)
+    P_lag2 = lag_n(ss_P,P,2)
+    P_lead = lead(P,ss_P)
+    X_lead = lead(X,ss_X)
+
+    # price as simple markup of MC
+    term_a = markup*(part_i+part_j)**(1/(1-sigma))
+
+    # price changes as a result of adjustment costs
+    term_b = -(iota/(eta-1))*((P/P_lag1)/(P_lag1/P_lag2)-1)*((P/P_lag1)/(P_lag1/P_lag2))*P
+    term_c = 2*beta*(iota/(eta-1))*(X_lead/X)*((P_lead/P)/(P/P_lag1)-1)*(P_lead/P)/(P/P_lag1)*P_lead
+
+    return term_a + term_b + term_c
+
+@nb.njit
 def adj_cost(iota,K_lag,Psi_0,delta_K):
 
     return 0.5*Psi_0*(iota/K_lag-delta_K)**2*K_lag
@@ -238,6 +264,9 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_M_X = sol.P_M_X
     P_M_G = sol.P_M_G
 
+    C = sol.C
+    repacking_prices_C = sol.repacking_prices_C
+
     # outputs
     P_C = sol.P_C
     P_I = sol.P_I
@@ -245,18 +274,23 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_G = sol.P_G
 
     # rigidity in price on consumption goods
-    P_C_lag_sum = np.zeros(par.T)
+    # P_C_lag_sum = np.zeros(par.T)
 
-    for i in np.arange(50):
-        P_Y_lag = lag_n(ss.P_Y,P_Y,i+1)
-        P_M_C_lag = lag_n(ss.P_M_C,P_M_C,i+1)
-        P_C_lag = CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C)*(par.flex)**(i+2)
-        P_C_lag_sum = np.add(P_C_lag_sum,P_C_lag)
+    # for i in np.arange(50):
+    #    P_Y_lag = lag_n(ss.P_Y,P_Y,i+1)
+    #    P_M_C_lag = lag_n(ss.P_M_C,P_M_C,i+1)
+    #    P_C_lag = CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C)*(par.flex)**(i+2)
+    #    P_C_lag_sum = np.add(P_C_lag_sum,P_C_lag)
 
-    P_C[:] = par.flex * CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C) + P_C_lag_sum 
+    # P_C[:] = par.flex * CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C) + P_C_lag_sum 
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
     P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G)
+
+    P_C[:] = CES_P_mp2(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C,P_C,C,par.iota,ss,sol,par.beta)
+
+    # target repacking_prices
+    repacking_prices_C[:] = CES_P_mp2(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C,P_C,C,par.iota,ss,sol,par.beta) - P_C
 
 @nb.njit
 def foreign_economy(par,ini,ss,sol):

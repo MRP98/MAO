@@ -61,6 +61,7 @@ class BabyMAKROModelClass(EconModelClass):
             'L',
             'r_K',
             'w',
+            'P_C',
         ]
 
         # targets
@@ -70,6 +71,7 @@ class BabyMAKROModelClass(EconModelClass):
             'FOC_capital_agency',
             'FOC_K_ell',
             'mkt_clearing',
+            'repacking_prices_C',
         ]
 
         # all non-household variables
@@ -118,6 +120,7 @@ class BabyMAKROModelClass(EconModelClass):
             'r_ell',
             'r_K',
             'r_b',
+            'repacking_prices_C',
             'S',
             'Tax',
             'tau',
@@ -177,7 +180,6 @@ class BabyMAKROModelClass(EconModelClass):
         par.delta_B = 5 # number of adjustment years
         par.epsilon_B = 0.2 # inspired by Anders Jurs 
 
-
         # f. repacking
         par.mu_M_C = 0.30 # weight on imports in C
         par.sigma_C = 1.5 # substitution
@@ -189,6 +191,8 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_X = 1.5 # substitution
         par.eta_C = 10 # Price elasticity of demand for consumption. Higher values implies a more competitive market and a lower markup.
         par.flex = 0.5 # Share of repacking firms with flexible prices.
+
+        par.iota = 1
 
         # g. foreign
         par.sigma_F = 1.5 # substitution in export demand
