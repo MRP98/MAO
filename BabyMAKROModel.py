@@ -183,16 +183,15 @@ class BabyMAKROModelClass(EconModelClass):
         # f. repacking
         par.mu_M_C = 0.30 # weight on imports in C
         par.sigma_C = 1.5 # substitution
-        par.mu_M_G = 0.30 # weight on imports in G. This should be disgusted. Compare the numbers with DK 
+        par.mu_M_G = 0.30 # weight on imports in G. This should be discussed. Compare the numbers with DK. 
         par.sigma_G = 1.5 # substitution
         par.mu_M_I = 0.35 # weight on imports in I
         par.sigma_I = 1.5 # substitution
         par.mu_M_X = 0.40 # weight on imports in X
         par.sigma_X = 1.5 # substitution
-        par.eta_C = 10 # Price elasticity of demand for consumption. Higher values implies a more competitive market and a lower markup.
-        par.flex = 0.5 # Share of repacking firms with flexible prices.
-
-        par.iota_0 = 1
+        par.eta_C = 10 # price elasticity of demand for consumption. Higher values implies a more competitive market and a lower markup.
+        par.flex = 0.5 # share of repacking firms with flexible prices.
+        par.iota_0 = 500 # higher values implies greater adjustment costs.
 
         # g. foreign
         par.sigma_F = 1.5 # substitution in export demand
