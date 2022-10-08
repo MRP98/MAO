@@ -192,7 +192,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.eta_C = 10 # Price elasticity of demand for consumption. Higher values implies a more competitive market and a lower markup.
         par.flex = 0.5 # Share of repacking firms with flexible prices.
 
-        par.iota = 1
+        par.iota_0 = 1
 
         # g. foreign
         par.sigma_F = 1.5 # substitution in export demand
