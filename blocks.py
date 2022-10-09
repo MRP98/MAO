@@ -274,11 +274,19 @@ def repacking_firms_prices(par,ini,ss,sol):
     part_ii = (P_C_lead/P_C)/(P_C/P_C_lag1)
 
     term_a = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C)
-    term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C
-    term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(C_lead/C)*(part_ii-1)*part_ii*P_C_lead
+    if (part_ii == 1).all():
+        repacking_prices_C[:] = term_a - P_C
+    else:    
+        term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C
+        term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(C_lead/C)*(part_ii-1)*part_ii*P_C_lead
+        repacking_prices_C[:] = term_a + term_b + term_c - P_C
+
+        
+
+    #term_c_r = 2*par.beta*(par.iota_0/(par.eta_C-1))*(C_lead/C)*(part_ii-1)*part_ii*P_C_lead
 
     # repacking_prices_C
-    repacking_prices_C[:] = term_a + term_b + term_c - P_C
+    #repacking_prices_C[:] = term_a_r + term_b_r + term_c_r - P_C
 
 @nb.njit
 def foreign_economy(par,ini,ss,sol):
@@ -319,11 +327,11 @@ def capital_agency(par,ini,ss,sol):
 
     iota_plus = lead(iota,ss.iota)
 
-    term_a = -P_I*(1+adj_cost_iota(iota,K_lag,par.Psi_0,par.delta_K))
-    term_b = (1-par.delta_K)*P_I*(1+adj_cost_iota(iota_plus,K,par.Psi_0,par.delta_K))
-    term_c = -P_I_plus*adj_cost(iota_plus,K,par.Psi_0,par.delta_K)
+    term_a_c = -P_I*(1+adj_cost_iota(iota,K_lag,par.Psi_0,par.delta_K))
+    term_b_c = (1-par.delta_K)*P_I*(1+adj_cost_iota(iota_plus,K,par.Psi_0,par.delta_K))
+    term_c_c = -P_I_plus*adj_cost(iota_plus,K,par.Psi_0,par.delta_K)
     
-    FOC_capital_agency[:] = term_a + 1/(1+par.r_firm)*(r_K_plus + term_b + term_c)
+    FOC_capital_agency[:] = term_a_c + 1/(1+par.r_firm)*(r_K_plus + term_b_c + term_c_c)
 
 @nb.njit
 def households_consumption(par,ini,ss,sol):    
