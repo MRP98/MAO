@@ -146,20 +146,32 @@ def household_search(par,ini,ss,sol):
 @nb.njit
 def government(par,ini,ss,sol):
     # inputs
-    L = sol.L # Labor force
-    w = sol.w # wage 
-
-    G = sol.G # government spending 
-    P_G = sol.P_G # price on government spending 
+    tau_tilde = sol.tau_tilde
+    P_G = sol.P_G
+    G = sol.G
+    w = sol.w
+    L = sol.L
 
     # outputs
     tau = sol.tau
+    tau_bar = sol.tau_bar
     B_G = sol.B_G
 
-    # evaluations 
-    B_G_lag = lag_n(ss.B_G,B_G, n=1)
-    
-    B_G[:]= (1+par.r_b)*B_G_lag - tau * w*L + P_G*G # DGBC
+    # evaluations
+    B_G_lag = lag(ss.B_G,B_G) 
+    tau_tilde = ss.tau  #the shock on t
+
+    for t in range(par.T):
+        
+        tau_bar[t] = ss.tau*(B_G_lag[t]/ss.B_G)**par.epsilon_B #problem for negative værdier af B_G_lag
+        
+        if t < par.t_b:
+            tau[t]=tau_tilde
+        
+        elif t >= par.t_b:
+            tau[t]=tau_bar[t]
+        
+        B_G[t] = (1+par.r_b)*B_G_lag[t] + P_G[t]*G[t] - tau[t]*w[t]*L[t]
 
 @nb.njit
 def labor_agency(par,ini,ss,sol):
@@ -283,10 +295,6 @@ def repacking_firms_prices(par,ini,ss,sol):
 
         
 
-    #term_c_r = 2*par.beta*(par.iota_0/(par.eta_C-1))*(C_lead/C)*(part_ii-1)*part_ii*P_C_lead
-
-    # repacking_prices_C
-    #repacking_prices_C[:] = term_a_r + term_b_r + term_c_r - P_C
 
 @nb.njit
 def foreign_economy(par,ini,ss,sol):
