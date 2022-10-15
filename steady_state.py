@@ -100,6 +100,7 @@ def find_ss(par,ss,m_s,do_print=True):
 
     # f. labor agency
     ss.ell = ss.L - par.kappa_L*ss.v
+    # ss.diff_y_z = ((1-par.beta)/par.beta+ss.delta_L+par.phi*(ss.v/ss.S)*ss.m_v)/((1-par.phi)*ss.m_v)*par.kappa_L
     ss.w = ss.r_ell*(1-par.kappa_L/ss.m_v + (1-ss.delta_L)/(1+par.r_firm)*par.kappa_L/ss.m_v)
 
     if do_print: print(f'{ss.ell = :.2f}')
@@ -108,7 +109,7 @@ def find_ss(par,ss,m_s,do_print=True):
     # g. government
     ss.B_G = float(50) # debt in ss is 0, arbitrary number 
     ss.G = float(100) # this is an arbitrary number
-    ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.w*ss.L) # based on expenses = income in period t, no change in debt in ss
+    ss.tau = (par.r_b*ss.B_G+ss.G)/(ss.w*ss.L) # based on expenses = income in period t, no change in debt in ss
     if do_print: print(f'{ss.G = :.2f}')
     if do_print: print(f'{ss.B_G = :.2f}')
     if do_print: print(f'{ss.tau = :.2f}')
@@ -164,5 +165,5 @@ def find_ss(par,ss,m_s,do_print=True):
     # n. bargaining
     ss.w_ast = ss.w
     ss.MPL = ((1-par.mu_K)*ss.Y/ss.ell)**(1/par.sigma_Y)
-    par.phi = (ss.w-par.w_U)/(ss.MPL-par.w_U)
+    par.phi = (ss.w_ast-par.w_U)/(ss.r_ell-par.w_U+(ss.v/ss.S)*par.kappa_L)
     if do_print: print(f'{par.phi = :.3f}')

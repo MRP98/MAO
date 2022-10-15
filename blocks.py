@@ -171,7 +171,7 @@ def government(par,ini,ss,sol):
         elif t >= par.t_b:
             tau[t]=tau_bar[t]
         
-        B_G[t] = (1+par.r_b)*B_G_lag[t] + P_G[t]*G[t] - tau[t]*w[t]*L[t]
+        B_G[t] = (1+par.r_b)*B_G_lag[t] + G[t] - tau[t]*w[t]*L[t]
 
 @nb.njit
 def labor_agency(par,ini,ss,sol):
@@ -224,6 +224,9 @@ def bargaining(par,ini,ss,sol):
     w = sol.w
     Y = sol.Y
     ell = sol.ell
+    v = sol.v
+    S = sol.S
+    r_ell = sol.r_ell
 
     # outputs
     MPL = sol.MPL
@@ -236,7 +239,7 @@ def bargaining(par,ini,ss,sol):
     w_lag = lag(ini.w,w)
 
     MPL[:] = ((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
-    w_ast[:] = par.phi*MPL + (1-par.phi)*par.w_U
+    w_ast[:] = par.w_U+ par.phi*( r_ell - par.w_U + (v/S) * par.kappa_L)
 
     bargaining_cond[:] = w - (par.gamma_w*w_lag + (1-par.gamma_w)*w_ast)
     
@@ -293,9 +296,6 @@ def repacking_firms_prices(par,ini,ss,sol):
         term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(C_lead/C)*(part_ii-1)*part_ii*P_C_lead
         repacking_prices_C[:] = term_a + term_b + term_c - P_C
 
-        
-
-
 @nb.njit
 def foreign_economy(par,ini,ss,sol):
 
@@ -336,7 +336,7 @@ def capital_agency(par,ini,ss,sol):
     iota_plus = lead(iota,ss.iota)
 
     term_a_c = -P_I*(1+adj_cost_iota(iota,K_lag,par.Psi_0,par.delta_K))
-    term_b_c = (1-par.delta_K)*P_I*(1+adj_cost_iota(iota_plus,K,par.Psi_0,par.delta_K))
+    term_b_c = (1-par.delta_K)*P_I_plus*(1+adj_cost_iota(iota_plus,K,par.Psi_0,par.delta_K))
     term_c_c = -P_I_plus*adj_cost(iota_plus,K,par.Psi_0,par.delta_K)
     
     FOC_capital_agency[:] = term_a_c + 1/(1+par.r_firm)*(r_K_plus + term_b_c + term_c_c)
