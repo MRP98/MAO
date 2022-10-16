@@ -47,6 +47,7 @@ class BabyMAKROModelClass(EconModelClass):
             'chi',
             'P_F',
             'P_M_C',
+            'P_E_C',
             'P_M_G',
             'P_M_I',
             'P_M_X',
@@ -79,6 +80,8 @@ class BabyMAKROModelClass(EconModelClass):
             'Bq_match',
             'Bq',
             'B_G',
+            'C_E',
+            'C_G',
             'C_M',
             'C_Y',
             'C',
@@ -112,6 +115,8 @@ class BabyMAKROModelClass(EconModelClass):
             'P_M_G',
             'P_M_I',
             'P_M_X',
+            'P_E_C',
+            'P_C_G',
             'P_X',
             'P_Y',
             'pi_hh',
@@ -180,7 +185,9 @@ class BabyMAKROModelClass(EconModelClass):
 
         # f. repacking
         par.mu_M_C = 0.30 # weight on imports in C
-        par.sigma_C = 1.5 # substitution
+        par.sigma_C_G = 1.5 # substitution
+        par.mu_E_C = 0.30 # weight on imports in C
+        par.sigma_C_E = 0.1 # substitution
         par.mu_M_G = 0.30 # weight on imports in G. This should be disgusted. Compare the numbers with DK 
         par.sigma_G = 1.5 # substitution
         par.mu_M_I = 0.35 # weight on imports in I

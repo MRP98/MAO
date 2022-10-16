@@ -159,7 +159,7 @@ def government(par,ini,ss,sol):
     # evaluations 
     B_G_lag = lag_n(ss.B_G,B_G, n=1)
     
-    B_G[:]= (1+par.r_b)*B_G_lag - tau * w*L + P_G*G # DGBC
+    B_G[:]= (1+par.r_b)*B_G_lag - tau * w*L + G # DGBC
 
 @nb.njit
 def labor_agency(par,ini,ss,sol):
@@ -237,6 +237,8 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_M_I = sol.P_M_I
     P_M_X = sol.P_M_X
     P_M_G = sol.P_M_G
+    P_E_C = sol.P_E_C
+    P_C_G = sol.P_C_G
 
     # outputs
     P_C = sol.P_C
@@ -245,15 +247,16 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_G = sol.P_G
 
     # rigidity in price on consumption goods
-    P_C_lag_sum = np.zeros(par.T)
+    P_C_G_lag_sum = np.zeros(par.T)
 
     for i in np.arange(50):
         P_Y_lag = lag_n(ss.P_Y,P_Y,i+1)
         P_M_C_lag = lag_n(ss.P_M_C,P_M_C,i+1)
-        P_C_lag = CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C)*(par.flex)**(i+2)
-        P_C_lag_sum = np.add(P_C_lag_sum,P_C_lag)
+        P_C_G_lag = CES_P(P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C_G)*(par.flex)**(i+2)
+        P_C_G_lag_sum = np.add(P_C_G_lag_sum,P_C_G_lag)
 
-    P_C[:] = par.flex * CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C) + P_C_lag_sum 
+    P_C_G[:] = CES_P(P_M_C,P_Y,par.mu_M_C,par.sigma_C_G) *par.flex + P_C_G_lag_sum
+    P_C[:] = CES_P(P_E_C,P_C_G, par.mu_E_C,par.sigma_C_E)
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
     P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G)
@@ -381,7 +384,11 @@ def repacking_firms_components(par,ini,ss,sol):
     # inputs
     P_Y = sol.P_Y
     P_M_C = sol.P_M_C
+    P_E_C = sol.P_E_C
+    P_C_G = sol.P_C_G
     P_C = sol.P_C
+    C_G = sol.C_G
+    C_E = sol.C_E
     C = sol.C
 
     P_M_I = sol.P_M_I
@@ -408,15 +415,18 @@ def repacking_firms_components(par,ini,ss,sol):
     G_Y = sol.G_Y
 
     # evaluations
-    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C,C,par.sigma_C)
+    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C_G,C_G,par.sigma_C_G)
     I_M[:] = CES_demand(par.mu_M_I,P_M_I,P_I,I,par.sigma_I)
     X_M[:] = CES_demand(par.mu_M_X,P_M_X,P_X,X,par.sigma_X)
     G_M[:] = CES_demand(par.mu_M_G,P_M_G,P_G,G,par.sigma_X)
 
-    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C,C,par.sigma_C)
+    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C_G,C_G,par.sigma_C_G)
     I_Y[:] = CES_demand(1-par.mu_M_I,P_Y,P_I,I,par.sigma_I)
     X_Y[:] = CES_demand(1-par.mu_M_X,P_Y,P_X,X,par.sigma_X)
     G_Y[:] = CES_demand(1-par.mu_M_G,P_Y,P_G,G,par.sigma_G)
+
+    C_E[:] = CES_demand(par.mu_E_C,P_E_C,P_C,C,par.sigma_C_E)
+    C_G[:] = CES_demand(1-par.mu_E_C,P_C_G,P_C,C,par.sigma_C_E)
     
 @nb.njit
 def goods_market_clearing(par,ini,ss,sol):
@@ -428,6 +438,8 @@ def goods_market_clearing(par,ini,ss,sol):
     I_M = sol.I_M
     X_M = sol.X_M
     G_M = sol.G_M
+
+    C_E = sol.C_E
 
     C_Y = sol.C_Y
     I_Y = sol.I_Y
@@ -441,6 +453,6 @@ def goods_market_clearing(par,ini,ss,sol):
     mkt_clearing = sol.mkt_clearing
 
     # evalautions
-    M[:] = C_M + I_M + X_M + G_M
+    M[:] = C_M + I_M + X_M + G_M + C_E
     
     mkt_clearing[:] = Y - (C_Y + I_Y + X_Y + G_Y)
