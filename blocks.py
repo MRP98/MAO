@@ -252,10 +252,10 @@ def repacking_firms_prices(par,ini,ss,sol):
     for i in np.arange(50):
         P_Y_lag = lag_n(ss.P_Y,P_Y,i+1)
         P_M_C_lag = lag_n(ss.P_M_C,P_M_C,i+1)
-        P_C_G_lag = CES_P(P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C_G)*(par.flex)**(i+2)
+        P_C_G_lag = CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C_G)*(par.flex)**(i+2)
         P_C_G_lag_sum = np.add(P_C_G_lag_sum,P_C_G_lag)
 
-    P_C_G[:] = CES_P(P_M_C,P_Y,par.mu_M_C,par.sigma_C_G) *par.flex + P_C_G_lag_sum
+    P_C_G[:] = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G) *par.flex + P_C_G_lag_sum
     P_C[:] = CES_P(P_E_C,P_C_G, par.mu_E_C,par.sigma_C_E)
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
