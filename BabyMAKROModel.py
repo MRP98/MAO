@@ -62,6 +62,7 @@ class BabyMAKROModelClass(EconModelClass):
             'L',
             'r_K',
             'w',
+            'P_C',
         ]
 
         # targets
@@ -71,6 +72,7 @@ class BabyMAKROModelClass(EconModelClass):
             'FOC_capital_agency',
             'FOC_K_ell',
             'mkt_clearing',
+            'repacking_prices_C',
         ]
 
         # all non-household variables
@@ -123,9 +125,12 @@ class BabyMAKROModelClass(EconModelClass):
             'r_ell',
             'r_K',
             'r_b',
+            'repacking_prices_C',
             'S',
             'Tax',
             'tau',
+            'tau_bar',
+            'tau_tilde',
             'v',
             'w_ast',
             'w',
@@ -178,10 +183,9 @@ class BabyMAKROModelClass(EconModelClass):
         # e. government 
         par.r_b = 0.04 # the rate of return on government debt
         #par.tau_tilde = 0.4 # the tax rate on labor, exogeneous
-        par.t_b = 50 # number of years with exogenous tax rate, which we can set
+        par.t_b = 20 # number of years with exogenous tax rate, which we can set
         par.delta_B = 5 # number of adjustment years
         par.epsilon_B = 0.2 # inspired by Anders Jurs 
-
 
         # f. repacking
         par.mu_M_C = 0.30 # weight on imports in C
@@ -194,8 +198,9 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_I = 1.5 # substitution
         par.mu_M_X = 0.40 # weight on imports in X
         par.sigma_X = 1.5 # substitution
-        par.eta_C = 10 # Price elasticity of demand for consumption. Higher values implies a more competitive market and a lower markup.
-        par.flex = 0.5 # Share of repacking firms with flexible prices.
+        par.eta_C = 10 # price elasticity of demand for consumption. Higher values implies a more competitive market and a lower markup.
+        par.flex = 0.5 # share of repacking firms with flexible prices.
+        par.iota_0 = 500 # higher values implies greater adjustment costs.
 
         # g. foreign
         par.sigma_F = 1.5 # substitution in export demand

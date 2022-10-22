@@ -31,7 +31,7 @@ def household_ss(Bq,par,ss):
         ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + par.yps*(1-ss.tau)* ss.w*ss.L_a[a] + ss.Bq/par.A - ss.P_C*ss.C_a[a]        
 
     # c. aggreagtes
-    ss.C = np.sum(ss.C_a) + (1-par.yps)*(1-ss.tau)*ss.w*ss.L
+    ss.C = np.sum(ss.C_a) + (1-par.yps)*ss.w*ss.L*(1-ss.tau)
     ss.B = np.sum(ss.B_a)
 
     return ss.Bq-ss.B_a[-1]
@@ -109,7 +109,7 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.w = :.2f}')
 
     # g. government
-    ss.B_G = float(50) # debt in ss is 0, arbitrary number 
+    ss.B_G = float(0) # debt in ss is 0, arbitrary number 
     ss.G = float(100) # this is an arbitrary number
     ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.w*ss.L) # based on expenses = income in period t, no change in debt in ss
     if do_print: print(f'{ss.G = :.2f}')
@@ -176,5 +176,5 @@ def find_ss(par,ss,m_s,do_print=True):
     # n. bargaining
     ss.w_ast = ss.w
     ss.MPL = ((1-par.mu_K)*ss.Y/ss.ell)**(1/par.sigma_Y)
-    par.phi = (ss.w-par.w_U)/(ss.MPL-par.w_U)
+    par.phi = (ss.w_ast-par.w_U)/(ss.r_ell-par.w_U+(ss.v/ss.S)*par.kappa_L)
     if do_print: print(f'{par.phi = :.3f}')

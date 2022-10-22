@@ -9,11 +9,11 @@ import numba as nb
 def lag(ssvalue,pathvalue):
     return np.hstack((np.array([ssvalue]),pathvalue[:-1]))
 
-# nth lag of variabel. If the variabel is y and n = 5, then y_{t-5} is returned.
 @nb.njit
 def lag_n(ssvalue,pathvalue,n=1):
+    # nth lag of variabel. If the variabel is y and n = 5, then y_{t-5} is returned.
     x = np.arange(n)
-    return np.hstack((np.full_like(x,ssvalue),pathvalue[:-n]))
+    return np.hstack((np.full_like(x,ssvalue,dtype=np.double),pathvalue[:-n]))
 
 @nb.njit
 def lead(pathvalue,ssvalue):
@@ -154,12 +154,36 @@ def government(par,ini,ss,sol):
 
     # outputs
     tau = sol.tau
+    tau_bar = sol.tau_bar
+    tau_tilde = sol.tau_tilde
     B_G = sol.B_G
 
     # evaluations 
-    B_G_lag = lag_n(ss.B_G,B_G, n=1)
+    # B_G_lag = lag_n(ss.B_G,B_G, n=1)
+
+    tau_tilde = ss.tau
     
-    B_G[:]= (1+par.r_b)*B_G_lag - tau * w*L + G # DGBC
+    for t in range(par.T):
+        
+        if t == 0:
+            B_G_lag = ini.B_G
+        else:
+            B_G_lag = B_G[t-1]
+        
+        expenditure = par.r_b*B_G_lag + P_G[t]*G[t]
+        taxbase =  w[t]*L[t]
+
+        B_G_tilde = B_G_lag + expenditure - ss.tau*taxbase
+
+        tau_bar = ss.tau + par.epsilon_B*(B_G_tilde-ss.B_G)/taxbase
+        
+        if t < par.t_b:
+            tau[t]=tau_tilde
+        
+        elif t >= par.t_b:
+            tau[t]=tau_bar
+        
+        B_G[t] = B_G_lag + expenditure - tau[t]*taxbase
 
 @nb.njit
 def labor_agency(par,ini,ss,sol):
@@ -212,6 +236,9 @@ def bargaining(par,ini,ss,sol):
     w = sol.w
     Y = sol.Y
     ell = sol.ell
+    v = sol.v
+    S = sol.S
+    r_ell = sol.r_ell
 
     # outputs
     MPL = sol.MPL
@@ -224,7 +251,7 @@ def bargaining(par,ini,ss,sol):
     w_lag = lag(ini.w,w)
 
     MPL[:] = ((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
-    w_ast[:] = par.phi*MPL + (1-par.phi)*par.w_U
+    w_ast[:] = par.w_U+ par.phi*( r_ell - par.w_U + (v/S) * par.kappa_L)
 
     bargaining_cond[:] = w - (par.gamma_w*w_lag + (1-par.gamma_w)*w_ast)
     
@@ -240,26 +267,48 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_E_C = sol.P_E_C
     P_C_G = sol.P_C_G
 
+    C = sol.C
+    repacking_prices_C = sol.repacking_prices_C
+
     # outputs
     P_C = sol.P_C
     P_I = sol.P_I
     P_X = sol.P_X
     P_G = sol.P_G
 
-    # rigidity in price on consumption goods
-    P_C_G_lag_sum = np.zeros(par.T)
+    # CALVO inspired price rigidity
 
-    for i in np.arange(50):
-        P_Y_lag = lag_n(ss.P_Y,P_Y,i+1)
-        P_M_C_lag = lag_n(ss.P_M_C,P_M_C,i+1)
-        P_C_G_lag = CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C_G)*(par.flex)**(i+2)
-        P_C_G_lag_sum = np.add(P_C_G_lag_sum,P_C_G_lag)
+        # P_C_lag_sum = np.zeros(par.T)
 
-    P_C_G[:] = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G) #*par.flex + P_C_G_lag_sum
-    P_C[:] = CES_P(P_E_C,P_C_G, par.mu_E_C,par.sigma_C_E)
+        # for i in np.arange(50):
+        #    P_Y_lag = lag_n(ss.P_Y,P_Y,i+1)
+        #    P_M_C_lag = lag_n(ss.P_M_C,P_M_C,i+1)
+        #    P_C_lag = CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C)*(par.flex)**(i+2)
+        #    P_C_lag_sum = np.add(P_C_lag_sum,P_C_lag)
+
+        # P_C[:] = par.flex * CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C) + P_C_lag_sum 
+
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
     P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G)
+
+    # Rotemberg price adjustment costs - from MAKRO
+    
+    P_C_G_lag1 = lag_n(ss.P_C_G,P_C_G,1)
+    P_C_G_lag2 = lag_n(ss.P_C_G,P_C_G,2)
+    P_C_G_lead = lead(P_C_G,ss.P_C_G)
+    C_G_lead = lead(C_G,ss.C_G)
+
+    part_i = (P_C_G/P_C_G_lag1)/(P_C_G_lag1/P_C_G_lag2)
+    part_ii = (P_C_G_lead/P_C_G)/(P_C_G/P_C_G_lag1)
+
+    term_a = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G)
+    term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C_G
+    term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(C_G_lead/C_G)*(part_ii-1)*part_ii*P_C_G_lead
+
+    # repacking_prices_C
+    repacking_prices_C[:] = term_a + term_b + term_c - P_C_G
+    P_C[:] = CES_P(P_E_C,P_C_G, par.mu_E_C,par.sigma_C_E)
 
 @nb.njit
 def foreign_economy(par,ini,ss,sol):
@@ -301,7 +350,7 @@ def capital_agency(par,ini,ss,sol):
     iota_plus = lead(iota,ss.iota)
 
     term_a = -P_I*(1+adj_cost_iota(iota,K_lag,par.Psi_0,par.delta_K))
-    term_b = (1-par.delta_K)*P_I*(1+adj_cost_iota(iota_plus,K,par.Psi_0,par.delta_K))
+    term_b = (1-par.delta_K)*P_I_plus*(1+adj_cost_iota(iota_plus,K,par.Psi_0,par.delta_K))
     term_c = -P_I_plus*adj_cost(iota_plus,K,par.Psi_0,par.delta_K)
     
     FOC_capital_agency[:] = term_a + 1/(1+par.r_firm)*(r_K_plus + term_b + term_c)
