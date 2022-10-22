@@ -106,7 +106,7 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.w = :.2f}')
 
     # g. government
-    ss.B_G = float(50) # debt in ss is 0, arbitrary number 
+    ss.B_G = float(0) # debt in ss is 0, arbitrary number 
     ss.G = float(100) # this is an arbitrary number
     ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.w*ss.L) # based on expenses = income in period t, no change in debt in ss
     if do_print: print(f'{ss.G = :.2f}')

@@ -154,12 +154,36 @@ def government(par,ini,ss,sol):
 
     # outputs
     tau = sol.tau
+    tau_bar = sol.tau_bar
+    tau_tilde = sol.tau_tilde
     B_G = sol.B_G
 
     # evaluations 
-    B_G_lag = lag_n(ss.B_G,B_G, n=1)
+    # B_G_lag = lag_n(ss.B_G,B_G, n=1)
+
+    tau_tilde = 0.65
     
-    B_G[:]= (1+par.r_b)*B_G_lag - tau * w*L + P_G*G # DGBC
+    for t in range(par.T):
+        
+        if t == 0:
+            B_G_lag = ini.B_G
+        else:
+            B_G_lag = B_G[t-1]
+        
+        expenditure = par.r_b*B_G_lag + P_G[t]*G[t]
+        taxbase =  w[t]*L[t]
+
+        B_G_tilde = B_G_lag + expenditure - ss.tau*taxbase
+
+        tau_bar = ss.tau + par.epsilon_B*(B_G_tilde-ss.B_G)/taxbase
+        
+        if t < par.t_b:
+            tau[t]=tau_tilde
+        
+        elif t >= par.t_b:
+            tau[t]=tau_bar
+        
+        B_G[t] = B_G_lag + expenditure - tau[t]*taxbase
 
 @nb.njit
 def labor_agency(par,ini,ss,sol):
