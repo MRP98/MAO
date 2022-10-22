@@ -49,14 +49,7 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.P_M_I = 1.0
     ss.P_M_X = 1.0
     
-    def CES_P(Pi,Pj,mui,sigma):
-
-        muj = 1-mui
     
-        part_i = mui*Pi**(1-sigma)
-        part_j = muj*Pj**(1-sigma)
-
-        return (part_i+part_j)**(1/(1-sigma))
     # b. pricing in repacking firms
     ss.P_C_G = blocks.CES_P_mp(par.eta_C,ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C_G)
     ss.P_C = blocks.CES_P(ss.P_E_C,ss.P_C_G,par.mu_E_C,par.sigma_C_E)
@@ -152,8 +145,8 @@ def find_ss(par,ss,m_s,do_print=True):
     # k. CES demand in packing firms
     ss.C_E = blocks.CES_demand(par.mu_E_C,ss.P_E_C,ss.P_C,ss.C, par.sigma_C_E)
     ss.C_G = blocks.CES_demand((1-par.mu_E_C),ss.P_C_G,ss.P_C,ss.C, par.sigma_C_E) 
-    ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C_G,ss.C_G, par.sigma_C_G)
-    ss.C_Y = blocks.CES_demand((1-par.mu_M_C),ss.P_Y,ss.P_C_G,ss.C_G, par.sigma_C_G)
+    ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C_G/(par.eta_C/(par.eta_C-1)),ss.C_G, par.sigma_C_G)
+    ss.C_Y = blocks.CES_demand((1-par.mu_M_C),ss.P_Y,ss.P_C_G/(par.eta_C/(par.eta_C-1)),ss.C_G, par.sigma_C_G)
      
 
     if do_print: print(f'{ss.C_M = :.2f}')

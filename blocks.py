@@ -255,7 +255,7 @@ def repacking_firms_prices(par,ini,ss,sol):
         P_C_G_lag = CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C_G)*(par.flex)**(i+2)
         P_C_G_lag_sum = np.add(P_C_G_lag_sum,P_C_G_lag)
 
-    P_C_G[:] = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G) *par.flex + P_C_G_lag_sum
+    P_C_G[:] = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G) #*par.flex + P_C_G_lag_sum
     P_C[:] = CES_P(P_E_C,P_C_G, par.mu_E_C,par.sigma_C_E)
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
@@ -415,12 +415,12 @@ def repacking_firms_components(par,ini,ss,sol):
     G_Y = sol.G_Y
 
     # evaluations
-    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C_G,C_G,par.sigma_C_G)
+    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G)
     I_M[:] = CES_demand(par.mu_M_I,P_M_I,P_I,I,par.sigma_I)
     X_M[:] = CES_demand(par.mu_M_X,P_M_X,P_X,X,par.sigma_X)
     G_M[:] = CES_demand(par.mu_M_G,P_M_G,P_G,G,par.sigma_X)
 
-    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C_G,C_G,par.sigma_C_G)
+    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G)
     I_Y[:] = CES_demand(1-par.mu_M_I,P_Y,P_I,I,par.sigma_I)
     X_Y[:] = CES_demand(1-par.mu_M_X,P_Y,P_X,X,par.sigma_X)
     G_Y[:] = CES_demand(1-par.mu_M_G,P_Y,P_G,G,par.sigma_G)
