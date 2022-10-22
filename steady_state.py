@@ -164,5 +164,5 @@ def find_ss(par,ss,m_s,do_print=True):
     # n. bargaining
     ss.w_ast = ss.w
     ss.MPL = ((1-par.mu_K)*ss.Y/ss.ell)**(1/par.sigma_Y)
-    par.phi = (ss.w-par.w_U)/(ss.MPL-par.w_U)
+    par.phi = (ss.w_ast-par.w_U)/(ss.r_ell-par.w_U+(ss.v/ss.S)*par.kappa_L)
     if do_print: print(f'{par.phi = :.3f}')

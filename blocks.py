@@ -161,7 +161,7 @@ def government(par,ini,ss,sol):
     # evaluations 
     # B_G_lag = lag_n(ss.B_G,B_G, n=1)
 
-    tau_tilde = 0.65
+    tau_tilde = ss.tau
     
     for t in range(par.T):
         
@@ -236,6 +236,9 @@ def bargaining(par,ini,ss,sol):
     w = sol.w
     Y = sol.Y
     ell = sol.ell
+    v = sol.v
+    S = sol.S
+    r_ell = sol.r_ell
 
     # outputs
     MPL = sol.MPL
@@ -248,7 +251,7 @@ def bargaining(par,ini,ss,sol):
     w_lag = lag(ini.w,w)
 
     MPL[:] = ((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
-    w_ast[:] = par.phi*MPL + (1-par.phi)*par.w_U
+    w_ast[:] = par.w_U+ par.phi*( r_ell - par.w_U + (v/S) * par.kappa_L)
 
     bargaining_cond[:] = w - (par.gamma_w*w_lag + (1-par.gamma_w)*w_ast)
     
@@ -344,7 +347,7 @@ def capital_agency(par,ini,ss,sol):
     iota_plus = lead(iota,ss.iota)
 
     term_a = -P_I*(1+adj_cost_iota(iota,K_lag,par.Psi_0,par.delta_K))
-    term_b = (1-par.delta_K)*P_I*(1+adj_cost_iota(iota_plus,K,par.Psi_0,par.delta_K))
+    term_b = (1-par.delta_K)*P_I_plus*(1+adj_cost_iota(iota_plus,K,par.Psi_0,par.delta_K))
     term_c = -P_I_plus*adj_cost(iota_plus,K,par.Psi_0,par.delta_K)
     
     FOC_capital_agency[:] = term_a + 1/(1+par.r_firm)*(r_K_plus + term_b + term_c)
