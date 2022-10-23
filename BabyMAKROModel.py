@@ -62,7 +62,7 @@ class BabyMAKROModelClass(EconModelClass):
             'L',
             'r_K',
             'w',
-            'P_C',
+            'P_C_G',
         ]
 
         # targets

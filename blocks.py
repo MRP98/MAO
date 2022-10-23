@@ -268,6 +268,7 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_C_G = sol.P_C_G
 
     C = sol.C
+    C_G = sol.C_G
     repacking_prices_C = sol.repacking_prices_C
 
     # outputs
