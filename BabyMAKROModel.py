@@ -134,6 +134,7 @@ class BabyMAKROModelClass(EconModelClass):
             'v',
             'w_ast',
             'w',
+            'w_U',
             'X_M',
             'X_Y',
             'X',
@@ -166,6 +167,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.r_hh = 0.04 # nominal return rate
         par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities
         par.w_U = 0.25 # outside option in bargaining
+        par.U_B = 0.25 # unemployment benefits share of optimal wages 
         par.yps = 0.80 # share of optimizing households
 
         # b. production firm
@@ -183,9 +185,10 @@ class BabyMAKROModelClass(EconModelClass):
         # e. government 
         par.r_b = 0.04 # the rate of return on government debt
         #par.tau_tilde = 0.4 # the tax rate on labor, exogeneous
-        par.t_b = 20 # number of years with exogenous tax rate, which we can set
+        par.t_b = 0 # number of years with exogenous tax rate, which we can set
         par.delta_B = 5 # number of adjustment years
         par.epsilon_B = 0.2 # inspired by Anders Jurs 
+        par.G_share_Y = 0.25
 
         # f. repacking
         par.mu_M_C = 0.30 # weight on imports in C
@@ -211,6 +214,9 @@ class BabyMAKROModelClass(EconModelClass):
         # i. bargaining
         par.gamma_w = 0.75 # wage persistence
         par.phi = np.nan # bargaining power of firms (determined when finding steady state)
+
+        # j. fixing variables
+        par.B_G_ss = 0.0 # government debt
 
     def allocate(self):
         """ allocate model """

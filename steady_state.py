@@ -28,10 +28,10 @@ def household_ss(Bq,par,ss):
         else: 
             B_lag = ss.B_a[a-1]
         
-        ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + par.yps*(1-ss.tau)* ss.w*ss.L_a[a] + ss.Bq/par.A - ss.P_C*ss.C_a[a]        
+        ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + par.yps*(1-ss.tau)* (ss.w*ss.L_a[a]+par.w_U*ss.w*ss.S_a[a]) + ss.Bq/par.A - ss.P_C*ss.C_a[a]        
 
     # c. aggreagtes
-    ss.C = np.sum(ss.C_a) + (1-par.yps)*ss.w*ss.L*(1-ss.tau)
+    ss.C = np.sum(ss.C_a) + (1-par.yps)*(ss.w*ss.L+par.w_U*ss.w*ss.S)*(1-ss.tau)
     ss.B = np.sum(ss.B_a)
 
     return ss.Bq-ss.B_a[-1]
@@ -108,24 +108,7 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.ell = :.2f}')
     if do_print: print(f'{ss.w = :.2f}')
 
-    # g. government
-    ss.B_G = float(0) # debt in ss is 0, arbitrary number 
-    ss.G = float(100) # this is an arbitrary number
-    ss.tau = (par.r_b*ss.B_G+ss.P_G*ss.G)/(ss.w*ss.L) # based on expenses = income in period t, no change in debt in ss
-    if do_print: print(f'{ss.G = :.2f}')
-    if do_print: print(f'{ss.B_G = :.2f}')
-    if do_print: print(f'{ss.tau = :.2f}')
-
-    # g. household behavior
-    if do_print: print(f'solving for household behavior:',end='')
-
-    result = optimize.root_scalar(household_ss,bracket=[0.01,100],method='brentq',args=(par,ss,))
-    if do_print: print(f' {result.converged = }')
     
-    household_ss(result.root,par,ss)
-
-    if do_print: print(f'{ss.C = :.2f}')
-    if do_print: print(f'{ss.B = :.2f}')
     
     # h. production firm FOCs
     ss.K = par.mu_K/(1-par.mu_K)*(ss.r_ell/ss.r_K)**par.sigma_Y*ss.ell
@@ -141,7 +124,24 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.Y = blocks.CES_Y(ss.K,ss.ell,par.mu_K,par.sigma_Y)
 
     if do_print: print(f'{ss.Y = :.2f}')
+    # g. government
+    ss.B_G = float(0) # debt in ss is 0, arbitrary number 
+    ss.G = par.G_share_Y*ss.Y # this is an arbitrary number
+    ss.tau = (par.r_b*ss.B_G+par.U_B*ss.w*ss.S+ss.P_G*ss.G)/(ss.w*ss.L+par.U_B*ss.w*ss.S) # based on expenses = income in period t, no change in debt in ss
+    if do_print: print(f'{ss.G = :.2f}')
+    if do_print: print(f'{ss.B_G = :.2f}')
+    if do_print: print(f'{ss.tau = :.2f}')
 
+    # g. household behavior
+    if do_print: print(f'solving for household behavior:',end='')
+
+    result = optimize.root_scalar(household_ss,bracket=[0.01,100],method='brentq',args=(par,ss,))
+    if do_print: print(f' {result.converged = }')
+    
+    household_ss(result.root,par,ss)
+
+    if do_print: print(f'{ss.C = :.2f}')
+    if do_print: print(f'{ss.B = :.2f}')
     # k. CES demand in packing firms
     ss.C_E = blocks.CES_demand(par.mu_E_C,ss.P_E_C,ss.P_C,ss.C, par.sigma_C_E)
     ss.C_G = blocks.CES_demand((1-par.mu_E_C),ss.P_C_G,ss.P_C,ss.C, par.sigma_C_E) 
@@ -175,6 +175,7 @@ def find_ss(par,ss,m_s,do_print=True):
 
     # n. bargaining
     ss.w_ast = ss.w
+    ss.w_U = par.U_B*ss.w
     ss.MPL = ((1-par.mu_K)*ss.Y/ss.ell)**(1/par.sigma_Y)
-    par.phi = (ss.w_ast-par.w_U)/(ss.r_ell-par.w_U+(ss.v/ss.S)*par.kappa_L)
+    par.phi = (ss.w_ast-ss.w_U)/(ss.r_ell-ss.w_U+(ss.v/ss.S)*par.kappa_L)
     if do_print: print(f'{par.phi = :.3f}')

@@ -148,6 +148,7 @@ def government(par,ini,ss,sol):
     # inputs
     L = sol.L # Labor force
     w = sol.w # wage 
+    S = sol.S
 
     G = sol.G # government spending 
     P_G = sol.P_G # price on government spending 
@@ -170,8 +171,8 @@ def government(par,ini,ss,sol):
         else:
             B_G_lag = B_G[t-1]
         
-        expenditure = par.r_b*B_G_lag + P_G[t]*G[t]
-        taxbase =  w[t]*L[t]
+        expenditure = par.r_b*B_G_lag +par.U_B*ss.w*S[t] + P_G[t]*G[t]
+        taxbase =  w[t]*L[t] + par.U_B*ss.w*S[t]
 
         B_G_tilde = B_G_lag + expenditure - ss.tau*taxbase
 
@@ -249,9 +250,9 @@ def bargaining(par,ini,ss,sol):
 
     # evaluations
     w_lag = lag(ini.w,w)
-
+    w_U = par.w_U*ss.w
     MPL[:] = ((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
-    w_ast[:] = par.w_U+ par.phi*( r_ell - par.w_U + (v/S) * par.kappa_L)
+    w_ast[:] = w_U+ par.phi*( r_ell - w_U + (v/S) * par.kappa_L)
 
     bargaining_cond[:] = w - (par.gamma_w*w_lag + (1-par.gamma_w)*w_ast)
     
@@ -362,6 +363,8 @@ def households_consumption(par,ini,ss,sol):
     # inputs
     L = sol.L
     L_a = sol.L_a
+    S = sol.S
+    S_a = sol.S_a
     P_C = sol.P_C
     w = sol.w
     Bq = sol.Bq
@@ -419,10 +422,10 @@ def households_consumption(par,ini,ss,sol):
             else:
                 B_a_lag = B_a[a-1,t-1]
             
-            B_a[a,t] = (1+par.r_hh)*B_a_lag + par.yps*(1-tau[t]) * w[t]*L_a[a,t] + Bq[t]/par.A - P_C[t]*C_a[a,t]
+            B_a[a,t] = (1+par.r_hh)*B_a_lag + par.yps*(1-tau[t]) * (w[t]*L_a[a,t]+par.U_B*ss.w*S_a[a,t]) + Bq[t]/par.A - P_C[t]*C_a[a,t]
 
     # aggregate
-    C[:] = np.sum(C_a,axis=0) + (1-par.yps)*(1-tau[t])*w[t]*L[t]
+    C[:] = np.sum(C_a,axis=0) + (1-par.yps)*(1-tau[t])*(w[t]*L[t]+par.U_B*ss.w*S[t])
     B[:] = np.sum(B_a,axis=0)  
 
     # matching Bq
