@@ -163,19 +163,19 @@ class BabyMAKROModelClass(EconModelClass):
         par.A = 80 # life-span
         par.A_R = 60 # work-life-span
         par.beta = 0.95 # discount factor
-        par.sigma = 2.0 # CRRA coefficient
+        par.sigma = 0.8 # CRRA coefficient
         par.mu_B = 2.5 # weight on bequest motive
         par.r_hh = 0.04 # nominal return rate
         par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities
         par.w_U = 0.25 # outside option in bargaining
         par.U_B = 0.25 # unemployment benefits share of optimal wages 
-        par.yps = 0.80 # share of optimizing households
+        par.yps = 0.50 # share of optimizing households
 
         # b. production firm
         par.r_firm = 0.04 # internal rate of return
         par.delta_K = 0.10 # discount factor
         par.mu_K = 1/3 # weigth on capital
-        par.sigma_Y = 1.01 # substitution
+        par.sigma_Y = 0.45 # substitution
 
         # c. labor agency
         par.kappa_L = 0.025
@@ -193,9 +193,9 @@ class BabyMAKROModelClass(EconModelClass):
 
         # f. repacking
         par.mu_M_C = 0.30 # weight on imports in C
-        par.sigma_C_G = 1.5 # substitution
+        par.sigma_C_G =2.67 # substitution
         par.mu_E_C = 0.30 # weight on imports in C
-        par.sigma_C_E = 0.1 # substitution
+        par.sigma_C_E = 0.26 # substitution
         par.mu_M_G = 0.30 # weight on imports in G. This should be disgusted. Compare the numbers with DK 
         par.sigma_G = 1.5 # substitution
         par.mu_M_I = 0.35 # weight on imports in I
@@ -213,7 +213,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_m = 1.5 # curvature
 
         # i. bargaining
-        par.gamma_w = 0.75 # wage persistence
+        par.gamma_w = 0.5 # wage persistence
         par.phi = np.nan # bargaining power of firms (determined when finding steady state)
 
         # j. fixing variables
