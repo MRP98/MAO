@@ -468,6 +468,9 @@ def repacking_firms_components(par,ini,ss,sol):
     G_Y = sol.G_Y
 
     # evaluations
+    C_E[:] = CES_demand(par.mu_E_C,P_E_C,P_C,C,par.sigma_C_E)
+    C_G[:] = CES_demand(1-par.mu_E_C,P_C_G,P_C,C,par.sigma_C_E)
+    
     C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G)
     I_M[:] = CES_demand(par.mu_M_I,P_M_I,P_I,I,par.sigma_I)
     X_M[:] = CES_demand(par.mu_M_X,P_M_X,P_X,X,par.sigma_X)
@@ -478,8 +481,7 @@ def repacking_firms_components(par,ini,ss,sol):
     X_Y[:] = CES_demand(1-par.mu_M_X,P_Y,P_X,X,par.sigma_X)
     G_Y[:] = CES_demand(1-par.mu_M_G,P_Y,P_G,G,par.sigma_G)
 
-    C_E[:] = CES_demand(par.mu_E_C,P_E_C,P_C,C,par.sigma_C_E)
-    C_G[:] = CES_demand(1-par.mu_E_C,P_C_G,P_C,C,par.sigma_C_E)
+    
     
 @nb.njit
 def goods_market_clearing(par,ini,ss,sol):
