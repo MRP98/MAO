@@ -31,7 +31,7 @@ def household_ss(Bq,par,ss):
         ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + par.yps*(1-ss.tau)* (ss.w*ss.L_a[a]+par.w_U*ss.w*ss.S_a[a]) + ss.Bq/par.A - ss.P_C*ss.C_a[a]        
 
     # c. aggreagtes
-    ss.C = np.sum(ss.C_a) + (1-par.yps)*(ss.w*ss.L+par.w_U*ss.w*ss.S)*(1-ss.tau)
+    ss.C = np.sum(ss.C_a) + ((1-par.yps)*(ss.w*ss.L+par.w_U*ss.w*ss.S+ss.Bq/par.A)*(1-ss.tau))/ss.P_C
     ss.B = np.sum(ss.B_a)
 
     return ss.Bq-ss.B_a[-1]

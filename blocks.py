@@ -396,7 +396,7 @@ def households_consumption(par,ini,ss,sol):
             # RHS
             if i == 0:
 
-                RHS = par.mu_B*Bq[t]**(-par.sigma)
+                RHS = par.mu_B*(Bq[t]/P_C[t])**(-par.sigma)
 
             else:
 
@@ -425,7 +425,7 @@ def households_consumption(par,ini,ss,sol):
             B_a[a,t] = (1+par.r_hh)*B_a_lag + par.yps*(1-tau[t]) * (w[t]*L_a[a,t]+par.U_B*ss.w*S_a[a,t]) + Bq[t]/par.A - P_C[t]*C_a[a,t]
 
     # aggregate
-    C[:] = np.sum(C_a,axis=0) + (1-par.yps)*(1-tau[t])*(w[t]*L[t]+par.U_B*ss.w*S[t])
+    C[:] = np.sum(C_a,axis=0) + ((1-par.yps)*(1-tau[t])*(w[t]*L[t]+par.U_B*ss.w*S[t]+Bq[t]/par.A))/P_C[t]
     B[:] = np.sum(B_a,axis=0)  
 
     # matching Bq
