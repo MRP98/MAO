@@ -37,6 +37,7 @@ class BabyMAKROModelClass(EconModelClass):
             'government',
             'households_consumption',
             'repacking_firms_components',
+            'price_consumption_bundle',
             'goods_market_clearing',
         ]
         

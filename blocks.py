@@ -294,22 +294,22 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
     P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G)
 
-    # Rotemberg price adjustment costs - from MAKRO
+    # # Rotemberg price adjustment costs - from MAKRO
     
-    P_C_G_lag1 = lag_n(ss.P_C_G,P_C_G,1)
-    P_C_G_lag2 = lag_n(ss.P_C_G,P_C_G,2)
-    P_C_G_lead = lead(P_C_G,ss.P_C_G)
-    C_G_lead = lead(C_G,ss.C_G)
+    # P_C_G_lag1 = lag_n(ss.P_C_G,P_C_G,1)
+    # P_C_G_lag2 = lag_n(ss.P_C_G,P_C_G,2)
+    # P_C_G_lead = lead(P_C_G,ss.P_C_G)
+    # C_G_lead = lead(C_G,ss.C_G)
 
-    part_i = (P_C_G/P_C_G_lag1)/(P_C_G_lag1/P_C_G_lag2)
-    part_ii = (P_C_G_lead/P_C_G)/(P_C_G/P_C_G_lag1)
+    # part_i = (P_C_G/P_C_G_lag1)/(P_C_G_lag1/P_C_G_lag2)
+    # part_ii = (P_C_G_lead/P_C_G)/(P_C_G/P_C_G_lag1)
 
-    term_a = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G)
-    term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C_G
-    term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(C_G_lead/C_G)*(part_ii-1)*part_ii*P_C_G_lead
+    # term_a = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G)
+    # term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C_G
+    # term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(C_G_lead/C_G)*(part_ii-1)*part_ii*P_C_G_lead
 
-    # repacking_prices_C
-    repacking_prices_C[:] = term_a + term_b + term_c - P_C_G
+    # # repacking_prices_C
+    # repacking_prices_C[:] = term_a + term_b + term_c - P_C_G
     P_C[:] = CES_P(P_E_C,P_C_G, par.mu_E_C,par.sigma_C_E)
 
 @nb.njit
@@ -432,6 +432,36 @@ def households_consumption(par,ini,ss,sol):
     Bq_match[:] = Bq - B_a[-1,:]
 
 @nb.njit
+def price_consumption_bundle(par,ini,ss,sol):
+    # inputs 
+    C_G = sol.C_G
+    P_M_C = sol.P_M_C
+    P_Y = sol.P_Y
+
+    # Ouputs
+    P_C_G = sol.P_C_G
+
+    # Targets 
+    repacking_prices_C = sol.repacking_prices_C
+
+    # Rotemberg price adjustment costs - from MAKRO
+    
+    P_C_G_lag1 = lag_n(ss.P_C_G,P_C_G,1)
+    P_C_G_lag2 = lag_n(ss.P_C_G,P_C_G,2)
+    P_C_G_lead = lead(P_C_G,ss.P_C_G)
+    C_G_lead = lead(C_G,ss.C_G)
+
+    part_i = (P_C_G/P_C_G_lag1)/(P_C_G_lag1/P_C_G_lag2)
+    part_ii = (P_C_G_lead/P_C_G)/(P_C_G/P_C_G_lag1)
+
+    term_a = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G)
+    term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C_G
+    term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(part_ii-1)*part_ii*P_C_G_lead*(C_G_lead/C_G)
+
+    # repacking_prices_C
+    repacking_prices_C[:] = P_C_G - term_a - term_b - term_c
+    
+@nb.njit
 def repacking_firms_components(par,ini,ss,sol):
 
     # inputs
@@ -481,8 +511,7 @@ def repacking_firms_components(par,ini,ss,sol):
     X_Y[:] = CES_demand(1-par.mu_M_X,P_Y,P_X,X,par.sigma_X)
     G_Y[:] = CES_demand(1-par.mu_M_G,P_Y,P_G,G,par.sigma_G)
 
-    
-    
+
 @nb.njit
 def goods_market_clearing(par,ini,ss,sol):
 
