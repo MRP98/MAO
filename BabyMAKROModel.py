@@ -48,12 +48,12 @@ class BabyMAKROModelClass(EconModelClass):
             'chi',
             'P_F',
             'P_M_C',
-            'P_E_C',
             'P_M_G',
             'P_M_I',
             'P_M_X',
             'G',
             'tau',
+            'r_E',
         ]
         
         # unknowns
@@ -61,9 +61,10 @@ class BabyMAKROModelClass(EconModelClass):
             'Bq',
             'K',
             'L',
+            'E',
             'r_K',
             'w',
-            'P_C_G',
+            'P_C',
         ]
 
         # targets
@@ -72,6 +73,7 @@ class BabyMAKROModelClass(EconModelClass):
             'Bq_match',
             'FOC_capital_agency',
             'FOC_K_ell',
+            'FOC_E_Y_KL',
             'mkt_clearing',
             'repacking_prices_C',
         ]
@@ -83,8 +85,6 @@ class BabyMAKROModelClass(EconModelClass):
             'Bq_match',
             'Bq',
             'B_G',
-            'C_E',
-            'C_G',
             'C_M',
             'C_Y',
             'C',
@@ -92,8 +92,10 @@ class BabyMAKROModelClass(EconModelClass):
             'curlyM',
             'delta_L',
             'ell',
+            'E',
             'FOC_C',
             'FOC_capital_agency',
+            'FOC_E_Y_KL',
             'FOC_K_ell',
             'G_M',
             'G_Y',
@@ -118,13 +120,13 @@ class BabyMAKROModelClass(EconModelClass):
             'P_M_G',
             'P_M_I',
             'P_M_X',
-            'P_E_C',
-            'P_C_G',
             'P_X',
             'P_Y',
+            'P_Y_KL',
             'pi_hh',
             'r_ell',
             'r_K',
+            'r_E',
             'r_b',
             'repacking_prices_C',
             'S',
@@ -140,6 +142,7 @@ class BabyMAKROModelClass(EconModelClass):
             'X_Y',
             'X',
             'Y',
+            'Y_KL',
         ]
 
         # all household variables
@@ -175,7 +178,9 @@ class BabyMAKROModelClass(EconModelClass):
         par.r_firm = 0.04 # internal rate of return
         par.delta_K = 0.10 # discount factor
         par.mu_K = 1/3 # weigth on capital
-        par.sigma_Y = 0.45 # substitution
+        par.mu_E = 1/3 # weight on energy
+        par.sigma_Y = 2.0 # substitution of E and Y_KL
+        par.sigma_Y_KL = 0.45 # substitution of L and K
 
         # c. labor agency
         par.kappa_L = 0.025
@@ -193,9 +198,7 @@ class BabyMAKROModelClass(EconModelClass):
 
         # f. repacking
         par.mu_M_C = 0.30 # weight on imports in C
-        par.sigma_C_G =2.67 # substitution
-        par.mu_E_C = 0.30 # weight on imports in C
-        par.sigma_C_E = 0.26 # substitution
+        par.sigma_C = 1.5 # substitution
         par.mu_M_G = 0.30 # weight on imports in G. This should be disgusted. Compare the numbers with DK 
         par.sigma_G = 1.5 # substitution
         par.mu_M_I = 0.35 # weight on imports in I

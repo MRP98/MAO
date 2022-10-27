@@ -44,15 +44,12 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.P_Y = 1.0
     ss.P_F = 1.0
     ss.P_M_C = 1.0
-    ss.P_E_C = 1.0
     ss.P_M_G = 1.0
     ss.P_M_I = 1.0
     ss.P_M_X = 1.0
     
-    
     # b. pricing in repacking firms
-    ss.P_C_G = blocks.CES_P_mp(par.eta_C,ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C_G)
-    ss.P_C = blocks.CES_P(ss.P_E_C,ss.P_C_G,par.mu_E_C,par.sigma_C_E)
+    ss.P_C = blocks.CES_P_mp(par.eta_C,ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C)
     ss.P_G = blocks.CES_P(ss.P_M_G, ss.P_Y, par.mu_M_G, par.sigma_G)
     ss.P_I = blocks.CES_P(ss.P_M_I,ss.P_Y,par.mu_M_I,par.sigma_I)
     ss.P_X = blocks.CES_P(ss.P_M_X,ss.P_Y,par.mu_M_X,par.sigma_X)
@@ -97,9 +94,14 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.r_K = :.2f}')
 
     # e. production firm pricing
-    ss.r_ell = ((1-par.mu_K*(ss.r_K)**(1-par.sigma_Y))/(1-par.mu_K))**(1/(1-par.sigma_Y))
+    ss.r_ell = ((1-par.mu_K*(ss.r_K)**(1-par.sigma_Y_KL))/(1-par.mu_K))**(1/(1-par.sigma_Y_KL))
+
+    ss.P_Y_KL = blocks.CES_P(ss.r_K,ss.r_ell,par.mu_K,par.sigma_Y_KL)
+
+    ss.r_E = ((1-par.mu_E*(ss.P_Y_KL)**(1-par.sigma_Y))/(1-par.mu_E))**(1/(1-par.sigma_Y))
 
     if do_print: print(f'{ss.r_ell = :.2f}')
+    if do_print: print(f'{ss.r_E = :.2f}')
 
     # f. labor agency
     ss.ell = ss.L - par.kappa_L*ss.v
@@ -108,10 +110,8 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.ell = :.2f}')
     if do_print: print(f'{ss.w = :.2f}')
 
-    
-    
     # h. production firm FOCs
-    ss.K = par.mu_K/(1-par.mu_K)*(ss.r_ell/ss.r_K)**par.sigma_Y*ss.ell
+    ss.K = par.mu_K/(1-par.mu_K)*(ss.r_ell/ss.r_K)**par.sigma_Y_KL*ss.ell
 
     if do_print: print(f'{ss.K = :.2f}')
 
@@ -121,9 +121,14 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.I = :.2f}')
 
     # j. output in production firm
-    ss.Y = blocks.CES_Y(ss.K,ss.ell,par.mu_K,par.sigma_Y)
+    ss.Y_KL = blocks.CES_Y(ss.K,ss.ell,par.mu_K,par.sigma_Y_KL)
+
+    ss.E = par.mu_E/(1-par.mu_E)*(ss.P_Y_KL/ss.r_E)**par.sigma_Y*ss.Y_KL
+
+    ss.Y = blocks.CES_Y(ss.E,ss.Y_KL,par.mu_E,par.sigma_Y)
 
     if do_print: print(f'{ss.Y = :.2f}')
+
     # g. government
     ss.B_G = float(0) # debt in ss is 0, arbitrary number 
     ss.G = par.G_share_Y*ss.Y # this is an arbitrary number
@@ -142,18 +147,13 @@ def find_ss(par,ss,m_s,do_print=True):
 
     if do_print: print(f'{ss.C = :.2f}')
     if do_print: print(f'{ss.B = :.2f}')
-    # k. CES demand in packing firms
-    ss.C_E = blocks.CES_demand(par.mu_E_C,ss.P_E_C,ss.P_C,ss.C, par.sigma_C_E)
-    ss.C_G = blocks.CES_demand((1-par.mu_E_C),ss.P_C_G,ss.P_C,ss.C, par.sigma_C_E) 
-    ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C_G/(par.eta_C/(par.eta_C-1)),ss.C_G, par.sigma_C_G)
-    ss.C_Y = blocks.CES_demand((1-par.mu_M_C),ss.P_Y,ss.P_C_G/(par.eta_C/(par.eta_C-1)),ss.C_G, par.sigma_C_G)
-     
 
+    # k. CES demand in packing firms
+    ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C,ss.C, par.sigma_C)
+    ss.C_Y = blocks.CES_demand((1-par.mu_M_C),ss.P_Y,ss.P_C,ss.C, par.sigma_C)
+     
     if do_print: print(f'{ss.C_M = :.2f}')
     if do_print: print(f'{ss.C_Y = :.2f}')
-    if do_print: print(f'{ss.C_E = :.2f}')
-    if do_print: print(f'{ss.C_G = :.2f}')
-    if do_print: print(f'{ss.C-ss.C_E-ss.C_G = :.2f}')
 
     ss.G_M = blocks.CES_demand(par.mu_M_G,ss.P_M_G,ss.P_G,ss.G, par.sigma_G)   
     ss.G_Y = blocks.CES_demand((1-par.mu_M_G),ss.P_Y,ss.P_G,ss.G, par.sigma_G)
@@ -168,7 +168,7 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.chi = ss.X_Y/X_Y
     ss.X_M = blocks.CES_demand(par.mu_M_X,ss.P_M_X,ss.P_X,ss.X,par.sigma_X)
     
-    ss.M = ss.C_M+ss.I_M+ss.X_M+ss.G_M + ss.C_E
+    ss.M = ss.C_M+ss.I_M+ss.X_M+ss.G_M
 
     if do_print: print(f'{ss.X = :.2f}')
     if do_print: print(f'{ss.M = :.2f}')
@@ -176,6 +176,6 @@ def find_ss(par,ss,m_s,do_print=True):
     # n. bargaining
     ss.w_ast = ss.w
     ss.w_U = par.U_B*ss.w
-    ss.MPL = ((1-par.mu_K)*ss.Y/ss.ell)**(1/par.sigma_Y)
+    ss.MPL = ((1-par.mu_K)*ss.Y_KL/ss.ell)**(1/par.sigma_Y_KL)
     par.phi = (ss.w_ast-ss.w_U)/(ss.r_ell-ss.w_U+(ss.v/ss.S)*par.kappa_L)
     if do_print: print(f'{par.phi = :.3f}')
