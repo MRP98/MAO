@@ -478,12 +478,12 @@ def repacking_firms_components(par,ini,ss,sol):
 
     # evaluations
     
-    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C/(par.eta_C/(par.eta_C-1)),C,par.sigma_C) # skal der deles med markup?
+    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C,C,par.sigma_C) # skal der deles med markup?
     I_M[:] = CES_demand(par.mu_M_I,P_M_I,P_I,I,par.sigma_I)
     X_M[:] = CES_demand(par.mu_M_X,P_M_X,P_X,X,par.sigma_X)
     G_M[:] = CES_demand(par.mu_M_G,P_M_G,P_G,G,par.sigma_X)
 
-    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C/(par.eta_C/(par.eta_C-1)),C,par.sigma_C) # skal der deles med markup?
+    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C,C,par.sigma_C) # skal der deles med markup?
     I_Y[:] = CES_demand(1-par.mu_M_I,P_Y,P_I,I,par.sigma_I)
     X_Y[:] = CES_demand(1-par.mu_M_X,P_Y,P_X,X,par.sigma_X)
     G_Y[:] = CES_demand(1-par.mu_M_G,P_Y,P_G,G,par.sigma_G)
