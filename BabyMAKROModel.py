@@ -179,7 +179,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.delta_K = 0.10 # discount factor
         par.mu_K = 1/3 # weigth on capital
         par.mu_E = 1/3 # weight on energy
-        par.sigma_Y = 2.0 # substitution of E and Y_KL
+        par.sigma_Y = 0.83 # substitution of E and Y_KL
         par.sigma_Y_KL = 0.45 # substitution of L and K
 
         # c. labor agency
