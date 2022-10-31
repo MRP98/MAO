@@ -271,28 +271,28 @@ def price_consumption_bundle(par,ini,ss,sol): # skal denne ikke rykkes ned?
     # inputs 
     P_M_C = sol.P_M_C
     P_Y = sol.P_Y
-    P_C = sol.P_C
-    C = sol.C
+    C_G = sol.C_G
+    P_C_G = sol.P_C_G
 
     # targets 
     repacking_prices_C = sol.repacking_prices_C
 
     # Rotemberg price adjustment costs - from MAKRO
     
-    P_C_lag1 = lag_n(ss.P_C,P_C,1)
-    P_C_lag2 = lag_n(ss.P_C,P_C,2)
-    P_C_lead = lead(P_C,ss.P_C)
-    C_lead = lead(C,ss.C)
+    P_C_G_lag1 = lag_n(ss.P_C_G,P_C_G,1)
+    P_C_G_lag2 = lag_n(ss.P_C_G,P_C_G,2)
+    P_C_G_lead = lead(P_C_G,ss.P_C_G)
+    C_G_lead = lead(C_G,ss.C_G)
 
-    part_i = (P_C/P_C_lag1)/(P_C_lag1/P_C_lag2)
-    part_ii = (P_C_lead/P_C)/(P_C/P_C_lag1)
+    part_i = (P_C_G/P_C_G_lag1)/(P_C_G_lag1/P_C_G_lag2)
+    part_ii = (P_C_G_lead/P_C_G)/(P_C_G/P_C_G_lag1)
 
-    term_a = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C)
-    term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C
-    term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(part_ii-1)*part_ii*P_C_lead*(C_lead/C)
+    term_a = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G)
+    term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C_G
+    term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(part_ii-1)*part_ii*P_C_G_lead*(C_G_lead/C_G)
 
     # repacking_prices_C
-    repacking_prices_C[:] = P_C - term_a - term_b - term_c
+    repacking_prices_C[:] = P_C_G - term_a - term_b - term_c
         
 @nb.njit
 def repacking_firms_prices(par,ini,ss,sol):
@@ -302,11 +302,14 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_M_I = sol.P_M_I
     P_M_X = sol.P_M_X
     P_M_G = sol.P_M_G
+    P_C_G = sol.P_C_G
+    P_E = sol.P_E
 
     # outputs
     P_I = sol.P_I
     P_X = sol.P_X
     P_G = sol.P_G
+    P_C = sol.P_C
 
     # CALVO inspired price rigidity
 
@@ -320,6 +323,7 @@ def repacking_firms_prices(par,ini,ss,sol):
 
         # P_C[:] = par.flex * CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C) + P_C_lag_sum 
 
+    P_C[:] = CES_P(P_E,P_C_G,par.mu_E_C,par.sigma_C)
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
     P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G)
@@ -452,6 +456,9 @@ def repacking_firms_components(par,ini,ss,sol):
     P_M_C = sol.P_M_C
     P_C = sol.P_C
     C = sol.C
+    C_G = sol.C_G
+    P_C_G = sol.P_C_G
+    P_E = sol.P_E
 
     P_M_I = sol.P_M_I
     P_I = sol.P_I
@@ -467,6 +474,8 @@ def repacking_firms_components(par,ini,ss,sol):
 
     # outputs
     C_M = sol.C_M
+    C_E = sol.C_E
+    C_G = sol.C_G
     I_M = sol.I_M
     X_M = sol.X_M
     G_M = sol.G_M
@@ -478,12 +487,15 @@ def repacking_firms_components(par,ini,ss,sol):
 
     # evaluations
     
-    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C,C,par.sigma_C) # skal der deles med markup?
+    C_E[:] = CES_demand(par.mu_E_C,P_E,P_C,C,par.sigma_C)
+    C_G[:] = CES_demand(1-par.mu_E_C,P_C_G,P_C,C,par.sigma_C)
+    
+    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G) # skal der deles med markup?
     I_M[:] = CES_demand(par.mu_M_I,P_M_I,P_I,I,par.sigma_I)
     X_M[:] = CES_demand(par.mu_M_X,P_M_X,P_X,X,par.sigma_X)
     G_M[:] = CES_demand(par.mu_M_G,P_M_G,P_G,G,par.sigma_X)
 
-    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C,C,par.sigma_C) # skal der deles med markup?
+    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G) # skal der deles med markup?
     I_Y[:] = CES_demand(1-par.mu_M_I,P_Y,P_I,I,par.sigma_I)
     X_Y[:] = CES_demand(1-par.mu_M_X,P_Y,P_X,X,par.sigma_X)
     G_Y[:] = CES_demand(1-par.mu_M_G,P_Y,P_G,G,par.sigma_G)
@@ -494,6 +506,8 @@ def goods_market_clearing(par,ini,ss,sol):
     # inputs
     Y = sol.Y
     
+    E = sol.E
+    C_E = sol.C_E
     C_M = sol.C_M
     I_M = sol.I_M
     X_M = sol.X_M
@@ -511,6 +525,6 @@ def goods_market_clearing(par,ini,ss,sol):
     mkt_clearing = sol.mkt_clearing
 
     # evalautions
-    M[:] = C_M + I_M + X_M + G_M
+    M[:] = C_M + I_M + X_M + G_M + C_E + E
     
     mkt_clearing[:] = Y - (C_Y + I_Y + X_Y + G_Y)

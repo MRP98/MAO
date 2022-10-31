@@ -51,6 +51,7 @@ class BabyMAKROModelClass(EconModelClass):
             'P_M_G',
             'P_M_I',
             'P_M_X',
+            'P_E',
             'G',
             'tau',
             'r_E',
@@ -64,7 +65,7 @@ class BabyMAKROModelClass(EconModelClass):
             'E',
             'r_K',
             'w',
-            'P_C',
+            'P_C_G',
         ]
 
         # targets
@@ -87,6 +88,8 @@ class BabyMAKROModelClass(EconModelClass):
             'B_G',
             'C_M',
             'C_Y',
+            'C_G',
+            'C_E',
             'C',
             'chi',
             'curlyM',
@@ -112,10 +115,12 @@ class BabyMAKROModelClass(EconModelClass):
             'M',
             'mkt_clearing',            
             'MPL',
+            'P_C_G',
             'P_C',
             'P_G',
             'P_F',
             'P_I',
+            'P_E',
             'P_M_C',
             'P_M_G',
             'P_M_I',
@@ -172,7 +177,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities
         par.w_U = 0.25 # outside option in bargaining
         par.U_B = 0.25 # unemployment benefits share of optimal wages 
-        par.yps = 0.50 # share of optimizing households
+        par.yps = 0.5 # share of optimizing households
 
         # b. production firm
         par.r_firm = 0.04 # internal rate of return
@@ -198,7 +203,9 @@ class BabyMAKROModelClass(EconModelClass):
 
         # f. repacking
         par.mu_M_C = 0.30 # weight on imports in C
-        par.sigma_C = 1.5 # substitution
+        par.sigma_C = -0.5 # substitution between energy and consumption goods
+        par.mu_E_C = 0.15 # weight on energy in C
+        par.sigma_C_G = 1.5 # substitution between imports and domestic output
         par.mu_M_G = 0.30 # weight on imports in G. This should be disgusted. Compare the numbers with DK 
         par.sigma_G = 1.5 # substitution
         par.mu_M_I = 0.35 # weight on imports in I

@@ -41,6 +41,7 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.m_s = m_s
 
     # a. price noramlizations
+    ss.P_E = 1.0
     ss.P_Y = 1.0
     ss.P_F = 1.0
     ss.P_M_C = 1.0
@@ -49,7 +50,8 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.P_M_X = 1.0
     
     # b. pricing in repacking firms
-    ss.P_C = blocks.CES_P_mp(par.eta_C,ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C)
+    ss.P_C_G = blocks.CES_P_mp(par.eta_C,ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C_G)
+    ss.P_C = blocks.CES_P(ss.P_E,ss.P_C_G,par.mu_E_C,par.sigma_C)
     ss.P_G = blocks.CES_P(ss.P_M_G,ss.P_Y,par.mu_M_G,par.sigma_G)
     ss.P_I = blocks.CES_P(ss.P_M_I,ss.P_Y,par.mu_M_I,par.sigma_I)
     ss.P_X = blocks.CES_P(ss.P_M_X,ss.P_Y,par.mu_M_X,par.sigma_X)
@@ -122,9 +124,7 @@ def find_ss(par,ss,m_s,do_print=True):
 
     # j. output in production firm
     ss.Y_KL = blocks.CES_Y(ss.K,ss.ell,par.mu_K,par.sigma_Y_KL)
-
     ss.E = par.mu_E/(1-par.mu_E)*(ss.P_Y_KL/ss.r_E)**par.sigma_Y*ss.Y_KL
-
     ss.Y = blocks.CES_Y(ss.E,ss.Y_KL,par.mu_E,par.sigma_Y)
 
     if do_print: print(f'{ss.Y = :.2f}')
@@ -149,8 +149,10 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.B = :.2f}')
 
     # k. CES demand in packing firms
-    ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C,ss.C, par.sigma_C)
-    ss.C_Y = blocks.CES_demand((1-par.mu_M_C),ss.P_Y,ss.P_C,ss.C, par.sigma_C)
+    ss.C_E = blocks.CES_demand(par.mu_E_C,ss.P_E,ss.P_C,ss.C, par.sigma_C)
+    ss.C_G = blocks.CES_demand((1-par.mu_E_C),ss.P_C_G,ss.P_C,ss.C, par.sigma_C)
+    ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C_G/(par.eta_C/(par.eta_C-1)),ss.C_G, par.sigma_C_G)
+    ss.C_Y = blocks.CES_demand((1-par.mu_M_C),ss.P_Y,ss.P_C_G/(par.eta_C/(par.eta_C-1)),ss.C_G, par.sigma_C_G)
 
     ss.G_M = blocks.CES_demand(par.mu_M_G,ss.P_M_G,ss.P_G,ss.G, par.sigma_G)   
     ss.G_Y = blocks.CES_demand((1-par.mu_M_G),ss.P_Y,ss.P_G,ss.G, par.sigma_G)
@@ -164,7 +166,7 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.X = ss.X_Y/(1-par.mu_M_X)
     ss.X_M = blocks.CES_demand(par.mu_M_X,ss.P_M_X,ss.P_X,ss.X,par.sigma_X)
     
-    ss.M = ss.C_M+ss.I_M+ss.X_M+ss.G_M
+    ss.M = ss.C_M+ss.I_M+ss.X_M+ss.G_M+ss.C_E+ss.E
 
     if do_print: print(f'{ss.X = :.2f}')
     if do_print: print(f'{ss.M = :.2f}')
