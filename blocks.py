@@ -190,21 +190,36 @@ def government(par,ini,ss,sol):
 def labor_agency(par,ini,ss,sol):
 
     # inputs
-    w = sol.w
-    m_v = sol.m_v
     delta_L = sol.delta_L
     L = sol.L
+    m_v = sol.m_v
     v = sol.v
+    w = sol.w
 
     # outputs
-    r_ell = sol.r_ell
     ell = sol.ell
+    r_ell = sol.r_ell
     
     # evaluations
-    m_v_plus = lead(m_v,ss.m_v)
-
-    r_ell[:] = w / (1-par.kappa_L/m_v+(1-delta_L)/(1+par.r_firm)*par.kappa_L/m_v_plus)
     ell[:] = L-par.kappa_L*v
+
+    for k in range(par.T):
+
+        t = par.T-1-k
+
+        if k == 0:
+            r_ell_plus = ss.r_ell
+            delta_L_plus = ss.delta_L
+            m_v_plus = ss.m_v
+        else:
+            r_ell_plus = r_ell[t+1]
+            delta_L_plus = delta_L[t+1]
+            m_v_plus = m_v[t+1]
+        
+        fac = 1/(1-par.kappa_L/m_v[t])
+        term = r_ell_plus*(1-delta_L_plus)/(1+par.r_firm)*par.kappa_L/m_v_plus
+
+        r_ell[t] = fac*(w[t]-term)
 
 @nb.njit
 def production_firm(par,ini,ss,sol):
