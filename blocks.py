@@ -11,7 +11,6 @@ def lag(ssvalue,pathvalue):
 
 @nb.njit
 def lag_n(ssvalue,pathvalue,n=1):
-    # nth lag of variabel. If the variabel is y and n = 5, then y_{t-5} is returned.
     x = np.arange(n)
     return np.hstack((np.full_like(x,ssvalue,dtype=np.double),pathvalue[:-n]))
 
@@ -86,14 +85,16 @@ def household_search(par,ini,ss,sol):
     # outputs
     S_a = sol.S_a
     S = sol.S
+    U_a = sol.U_a
+    U = sol.U
     L_ubar_a = sol.L_ubar_a
     L_ubar = sol.L_ubar
+    L_a = sol.L_a
     delta_L = sol.delta_L
     curlyM = sol.curlyM
     m_s = sol.m_s
-    v = sol.v
     m_v = sol.m_v
-    L_a = sol.L_a
+    v = sol.v
 
     # evaluations
     for t in range(par.T):
@@ -139,52 +140,17 @@ def household_search(par,ini,ss,sol):
         v[t] = (m_s[t]**(1/par.sigma_m)*S[t]**(1/par.sigma_m)/(1-m_s[t]**(1/par.sigma_m)))**par.sigma_m
         m_v[t] = curlyM[t]/v[t]
 
-        # e. emplolyment
+        # e. emplolyment and unemployment
         for a in range(par.A):
+
             L_a[a,t] = L_ubar_a[a,t] + m_s[t]*S_a[a,t]
 
-@nb.njit
-def government(par,ini,ss,sol):
-    # inputs
-    L = sol.L # Labor force
-    w = sol.w # wage 
-    S = sol.S
+            if a < par.A:
+                U_a[a,t] = 1-L_a[a,t]            
+            else:
+                U_a[a,t] = 0.0
 
-    G = sol.G # government spending 
-    P_G = sol.P_G # price on government spending 
-
-    # outputs
-    tau = sol.tau
-    tau_bar = sol.tau_bar
-    tau_tilde = sol.tau_tilde
-    B_G = sol.B_G
-
-    # evaluations 
-    # B_G_lag = lag_n(ss.B_G,B_G, n=1)
-
-    tau_tilde = ss.tau
-    
-    for t in range(par.T):
-        
-        if t == 0:
-            B_G_lag = ini.B_G
-        else:
-            B_G_lag = B_G[t-1]
-        
-        expenditure = par.r_b*B_G_lag +par.U_B*ss.w*S[t] + P_G[t]*G[t]
-        taxbase =  w[t]*L[t] + par.U_B*ss.w*S[t]
-
-        B_G_tilde = B_G_lag + expenditure - ss.tau*taxbase
-
-        tau_bar = ss.tau + par.epsilon_B*(B_G_tilde-ss.B_G)/taxbase
-        
-        if t < par.t_b:
-            tau[t]=tau_tilde
-        
-        elif t >= par.t_b:
-            tau[t]=tau_bar
-        
-        B_G[t] = B_G_lag + expenditure - tau[t]*taxbase
+        U[t] = np.sum(U_a[:,t])
 
 @nb.njit
 def labor_agency(par,ini,ss,sol):
@@ -279,35 +245,6 @@ def bargaining(par,ini,ss,sol):
     w_ast[:] = w_U+ par.phi*( r_ell - w_U + (v/S) * par.kappa_L)
 
     bargaining_cond[:] = w - (par.gamma_w*w_lag + (1-par.gamma_w)*w_ast)
-
-@nb.njit
-def price_consumption_bundle(par,ini,ss,sol): # skal denne ikke rykkes ned?
-    
-    # inputs 
-    P_M_C = sol.P_M_C
-    P_Y = sol.P_Y
-    C_G = sol.C_G
-    P_C_G = sol.P_C_G
-
-    # targets 
-    repacking_prices_C = sol.repacking_prices_C
-
-    # Rotemberg price adjustment costs - from MAKRO
-    
-    P_C_G_lag1 = lag_n(ss.P_C_G,P_C_G,1)
-    P_C_G_lag2 = lag_n(ss.P_C_G,P_C_G,2)
-    P_C_G_lead = lead(P_C_G,ss.P_C_G)
-    C_G_lead = lead(C_G,ss.C_G)
-
-    part_i = (P_C_G/P_C_G_lag1)/(P_C_G_lag1/P_C_G_lag2)
-    part_ii = (P_C_G_lead/P_C_G)/(P_C_G/P_C_G_lag1)
-
-    term_a = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G)
-    term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C_G
-    term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(part_ii-1)*part_ii*P_C_G_lead*(C_G_lead/C_G)
-
-    # repacking_prices_C
-    repacking_prices_C[:] = P_C_G - term_a - term_b - term_c
         
 @nb.njit
 def repacking_firms_prices(par,ini,ss,sol):
@@ -326,18 +263,6 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_G = sol.P_G
     P_C = sol.P_C
 
-    # CALVO inspired price rigidity
-
-        # P_C_lag_sum = np.zeros(par.T)
-
-        # for i in np.arange(50):
-        #    P_Y_lag = lag_n(ss.P_Y,P_Y,i+1)
-        #    P_M_C_lag = lag_n(ss.P_M_C,P_M_C,i+1)
-        #    P_C_lag = CES_P_mp(par.eta_C,P_M_C_lag,P_Y_lag,par.mu_M_C,par.sigma_C)*(par.flex)**(i+2)
-        #    P_C_lag_sum = np.add(P_C_lag_sum,P_C_lag)
-
-        # P_C[:] = par.flex * CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C) + P_C_lag_sum 
-
     P_C[:] = CES_P(P_E,P_C_G,par.mu_E_C,par.sigma_C)
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
@@ -349,13 +274,13 @@ def foreign_economy(par,ini,ss,sol):
     # inputs
     P_F = sol.P_F
     chi = sol.chi
-    P_Y = sol.P_Y
+    P_X = sol.P_X
 
     # outputs
     X = sol.X
     
     # evaluations
-    X[:] = chi*(P_Y/P_F)**(-par.sigma_F)
+    X[:] = chi*(P_X/P_F)**(-par.sigma_F)
 
 @nb.njit
 def capital_agency(par,ini,ss,sol):
@@ -389,17 +314,57 @@ def capital_agency(par,ini,ss,sol):
     FOC_capital_agency[:] = term_a + 1/(1+par.r_firm)*(r_K_plus + term_b + term_c)
 
 @nb.njit
+def government(par,ini,ss,sol):
+    
+    # inputs
+    L = sol.L
+    U = sol.U
+    w = sol.w
+    G = sol.G
+    P_G = sol.P_G
+
+    # outputs
+    tau = sol.tau
+    tau_bar = sol.tau_bar
+    tau_tilde = sol.tau_tilde
+    B_G = sol.B_G
+
+    # evaluations 
+    tau_tilde = ss.tau
+    
+    for t in range(par.T):
+        
+        if t == 0:
+            B_G_lag = ini.B_G
+        else:
+            B_G_lag = B_G[t-1]
+        
+        expenditure = par.r_b*B_G_lag + par.U_B*ss.w*U[t] + P_G[t]*G[t]
+        taxbase =  w[t]*L[t] + par.U_B*ss.w*U[t]
+        B_G_tilde = B_G_lag + expenditure - ss.tau*taxbase
+        tau_bar = ss.tau + par.epsilon_B*(B_G_tilde-ss.B_G)/taxbase
+        
+        if t < par.t_b:
+            tau[t]=tau_tilde
+        elif t >= par.t_b:
+            tau[t]=tau_bar
+        
+        B_G[t] = B_G_lag + expenditure - tau[t]*taxbase
+
+@nb.njit
 def households_consumption(par,ini,ss,sol):    
 
     # inputs
     L = sol.L
     L_a = sol.L_a
-    S = sol.S
-    S_a = sol.S_a
+    U = sol.U
+    U_a = sol.U_a
     P_C = sol.P_C
     w = sol.w
     Bq = sol.Bq
     tau = sol.tau
+    t_inc = sol.t_inc
+    t_inc_a = sol.t_inc_a
 
     # outputs
     pi_hh = sol.pi_hh
@@ -410,7 +375,6 @@ def households_consumption(par,ini,ss,sol):
 
     # evaluations
     P_C_lag = lag(ini.P_C,P_C)
-
     pi_hh = P_C/P_C_lag-1
     pi_hh_plus = lead(pi_hh,ss.pi_hh)
 
@@ -453,10 +417,13 @@ def households_consumption(par,ini,ss,sol):
             else:
                 B_a_lag = B_a[a-1,t-1]
             
-            B_a[a,t] = (1+par.r_hh)*B_a_lag + par.yps*(1-tau[t]) * (w[t]*L_a[a,t]+par.U_B*ss.w*S_a[a,t]) + Bq[t]/par.A - P_C[t]*C_a[a,t]
+            t_inc[t] = w[t]*L[t]+par.U_B*ss.w*U[t]
+            t_inc_a[a,t] = w[t]*L_a[a,t]+par.U_B*ss.w*U_a[a,t]
+
+            B_a[a,t] = (1+par.r_hh)*B_a_lag + par.yps*((1-tau[t])*t_inc_a[a,t]+Bq[t]/par.A) - P_C[t]*C_a[a,t]
 
     # aggregate
-    C[:] = np.sum(C_a,axis=0) + ((1-par.yps)*(1-tau[t])*(w[t]*L[t]+par.U_B*ss.w*S[t]+Bq[t]/par.A))/P_C[t]
+    C[:] = np.sum(C_a,axis=0) + ((1-par.yps)*((1-tau[t])*t_inc[t]+Bq[t]/par.A))/P_C[t]
     B[:] = np.sum(B_a,axis=0)  
 
     # matching Bq
@@ -501,19 +468,45 @@ def repacking_firms_components(par,ini,ss,sol):
     G_Y = sol.G_Y
 
     # evaluations
-    
     C_E[:] = CES_demand(par.mu_E_C,P_E,P_C,C,par.sigma_C)
     C_G[:] = CES_demand(1-par.mu_E_C,P_C_G,P_C,C,par.sigma_C)
     
-    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G) # skal der deles med markup?
+    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G)
     I_M[:] = CES_demand(par.mu_M_I,P_M_I,P_I,I,par.sigma_I)
     X_M[:] = CES_demand(par.mu_M_X,P_M_X,P_X,X,par.sigma_X)
     G_M[:] = CES_demand(par.mu_M_G,P_M_G,P_G,G,par.sigma_X)
 
-    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G) # skal der deles med markup?
+    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G)
     I_Y[:] = CES_demand(1-par.mu_M_I,P_Y,P_I,I,par.sigma_I)
     X_Y[:] = CES_demand(1-par.mu_M_X,P_Y,P_X,X,par.sigma_X)
     G_Y[:] = CES_demand(1-par.mu_M_G,P_Y,P_G,G,par.sigma_G)
+
+@nb.njit
+def price_consumption_bundle(par,ini,ss,sol):
+    
+    # inputs 
+    P_M_C = sol.P_M_C
+    P_Y = sol.P_Y
+    C_G = sol.C_G
+    P_C_G = sol.P_C_G
+
+    # targets 
+    repacking_prices_C = sol.repacking_prices_C
+
+    # evaluations
+    P_C_G_lag1 = lag_n(ss.P_C_G,P_C_G,1)
+    P_C_G_lag2 = lag_n(ss.P_C_G,P_C_G,2)
+    P_C_G_lead = lead(P_C_G,ss.P_C_G)
+    C_G_lead = lead(C_G,ss.C_G)
+
+    part_i = (P_C_G/P_C_G_lag1)/(P_C_G_lag1/P_C_G_lag2)
+    part_ii = (P_C_G_lead/P_C_G)/(P_C_G/P_C_G_lag1)
+
+    term_a = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G)
+    term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C_G
+    term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(part_ii-1)*part_ii*P_C_G_lead*(C_G_lead/C_G)
+
+    repacking_prices_C[:] = P_C_G - term_a - term_b - term_c
 
 @nb.njit
 def goods_market_clearing(par,ini,ss,sol):

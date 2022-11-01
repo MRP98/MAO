@@ -28,10 +28,13 @@ def household_ss(Bq,par,ss):
         else: 
             B_lag = ss.B_a[a-1]
         
-        ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + par.yps*(1-ss.tau)* (ss.w*ss.L_a[a]+par.w_U*ss.w*ss.S_a[a]) + ss.Bq/par.A - ss.P_C*ss.C_a[a]        
+        ss.t_inc = ss.w*ss.L+par.U_B*ss.w*ss.U
+        ss.t_inc_a[a] = ss.w*ss.L_a[a]+par.U_B*ss.w*ss.U_a[a]
+
+        ss.B_a[a] = (1+par.r_hh)/(1+ss.pi_hh)*B_lag + par.yps*((1-ss.tau)*ss.t_inc_a[a]+ss.Bq/par.A) - ss.P_C*ss.C_a[a]        
 
     # c. aggreagtes
-    ss.C = np.sum(ss.C_a) + ((1-par.yps)*(ss.w*ss.L+par.w_U*ss.w*ss.S+ss.Bq/par.A)*(1-ss.tau))/ss.P_C
+    ss.C = np.sum(ss.C_a) + ((1-par.yps)*((1-ss.tau)*ss.t_inc+ss.Bq/par.A))/ss.P_C
     ss.B = np.sum(ss.B_a)
 
     return ss.Bq-ss.B_a[-1]
@@ -40,7 +43,7 @@ def find_ss(par,ss,m_s,do_print=True):
 
     ss.m_s = m_s
 
-    # a. price noramlizations
+    # a. price normalizations
     ss.P_E = 1.0
     ss.P_Y = 1.0
     ss.P_F = 1.0
@@ -72,10 +75,12 @@ def find_ss(par,ss,m_s,do_print=True):
             ss.L_ubar_a[a] = (1-par.delta_L_a[a])*ss.L_a[a-1]
 
         ss.L_a[a] = ss.L_ubar_a[a] + ss.m_s*ss.S_a[a]
+        ss.U_a[a] = 1 - ss.L_a[a]
 
     ss.S = np.sum(ss.S_a)
-    ss.L_ubar = np.sum(ss.L_ubar_a)
+    ss.U = np.sum(ss.U_a)
     ss.L = np.sum(ss.L_a)
+    ss.L_ubar = np.sum(ss.L_ubar_a)
 
     ss.delta_L = (ss.L-ss.L_ubar)/ss.L
     ss.curlyM = ss.delta_L*ss.L
@@ -97,9 +102,7 @@ def find_ss(par,ss,m_s,do_print=True):
 
     # e. production firm pricing
     ss.r_ell = ((1-par.mu_K*(ss.r_K)**(1-par.sigma_Y_KL))/(1-par.mu_K))**(1/(1-par.sigma_Y_KL))
-
     ss.P_Y_KL = blocks.CES_P(ss.r_K,ss.r_ell,par.mu_K,par.sigma_Y_KL)
-
     ss.r_E = ((1-par.mu_E*(ss.P_Y_KL)**(1-par.sigma_Y))/(1-par.mu_E))**(1/(1-par.sigma_Y))
 
     if do_print: print(f'{ss.r_ell = :.2f}')

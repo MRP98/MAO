@@ -139,6 +139,7 @@ class BabyMAKROModelClass(EconModelClass):
             'tau',
             'tau_bar',
             'tau_tilde',
+            'U',
             'v',
             'w_ast',
             'w',
@@ -148,6 +149,7 @@ class BabyMAKROModelClass(EconModelClass):
             'X',
             'Y',
             'Y_KL',
+            't_inc',
         ]
 
         # all household variables
@@ -158,6 +160,8 @@ class BabyMAKROModelClass(EconModelClass):
             'L_a',
             'L_ubar_a',
             'S_a',
+            'U_a',
+            't_inc_a',
         ]
 
     def setup(self):
