@@ -240,7 +240,7 @@ def bargaining(par,ini,ss,sol):
 
     # evaluations
     w_lag = lag(ini.w,w)
-    w_U = par.w_U*ss.w
+    w_U = par.U_B*ss.w
     MPL[:] = ((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
     w_ast[:] = w_U+ par.phi*( r_ell - w_U + (v/S) * par.kappa_L)
 

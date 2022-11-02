@@ -169,69 +169,71 @@ class BabyMAKROModelClass(EconModelClass):
 
         par = self.par
 
-        par.T = 500 # number of time-periods
+        # betydning af ord efter tekst:
+        # ok: kan ændres, men skal ikke diskutteres
+        # y: yes, det er "bare" fra MAKRO
+        # d: skal diskuteres, da svært at finde en kilde for
+        
+        par.T = 500 # number of time-periods, ok       
         
         # a. households
-        par.A = 80 # life-span
-        par.A_R = 60 # work-life-span
-        par.beta = 0.95 # discount factor
-        par.sigma = 0.8 # CRRA coefficient
-        par.mu_B = 2.5 # weight on bequest motive
-        par.r_hh = 0.04 # nominal return rate
-        par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities
-        par.w_U = 0.25 # outside option in bargaining
-        par.U_B = 0.25 # unemployment benefits share of optimal wages 
-        par.yps = 0.5 # share of optimizing households
+        par.A = 80 # life-span , ok
+        par.A_R = 60 # work-life-span, ok
+        par.beta = 0.95 # discount factor, ok
+        par.sigma = 0.8 # CRRA coefficient, y
+        par.mu_B = 2.5 # weight on bequest motive, d
+        par.r_hh = 0.04 # nominal return rate, ok
+        par.delta_L_a = 0.05*np.ones(par.A_R) # separation probabilities, ok
+        par.U_B = 0.25 # unemployment benefits share of optimal wages, d
+        par.yps = 0.5 # share of optimizing households, y
 
         # b. production firm
-        par.r_firm = 0.04 # internal rate of return
-        par.delta_K = 0.10 # discount factor
-        par.mu_K = 1/3 # weigth on capital
-        par.mu_E = 1/3 # weight on energy
-        par.sigma_Y = 0.83 # substitution of E and Y_KL
-        par.sigma_Y_KL = 0.45 # substitution of L and K
+        par.r_firm = 0.04 # internal rate of return, ok 
+        par.delta_K = 0.10 # discount factor, ok (er ret høj ikke?)
+        par.mu_K = 1/3 # weigth on capital, ok 
+        par.mu_E = 1/3 # weight on energy, ok 
+        par.sigma_Y = 0.83 # substitution of E and Y_KL, y (vi anvender for fremstilling)
+        par.sigma_Y_KL = 0.45 # substitution of L and K, y (vi anvender for fremstilling)
 
         # c. labor agency
-        par.kappa_L = 0.025
+        par.kappa_L = 0.025 # d
 
         # d. capital agency
-        par.Psi_0 = 0.5 # adjustment costs
+        par.Psi_0 = 5 # adjustment costs, y (anvender for maskin-installations-omkostninger, alternativ bygningsinstallationsomkostning med 6.5)
 
         # e. government 
-        par.r_b = 0.04 # the rate of return on government debt
-        #par.tau_tilde = 0.4 # the tax rate on labor, exogeneous
-        par.t_b = 0 # number of years with exogenous tax rate, which we can set
-        par.delta_B = 5 # number of adjustment years
-        par.epsilon_B = 0.2 # inspired by Anders Jurs 
-        par.G_share_Y = 0.25
+        par.r_b = 0.04 # the rate of return on government debt, ok
+        par.t_b = 0 # number of years with exogenous tax rate, which we can set, ok
+        par.delta_B = 5 # number of adjustment years, ok
+        par.epsilon_B = 0.2 # inspired by Anders Jurs, d
+        par.G_share_Y = 0.25 # ok (it is similar for G in Denmark the last 10 years)
 
         # f. repacking
-        par.mu_M_C = 0.30 # weight on imports in C
-        par.sigma_C = -0.5 # substitution between energy and consumption goods
-        par.mu_E_C = 0.15 # weight on energy in C
-        par.sigma_C_G = 1.5 # substitution between imports and domestic output
-        par.mu_M_G = 0.30 # weight on imports in G. This should be disgusted. Compare the numbers with DK 
-        par.sigma_G = 1.5 # substitution
-        par.mu_M_I = 0.35 # weight on imports in I
-        par.sigma_I = 1.5 # substitution
-        par.mu_M_X = 0.40 # weight on imports in X
-        par.sigma_X = 1.5 # substitution
-        par.eta_C = 10 # price elasticity of demand for consumption. Higher values implies a more competitive market and a lower markup.
-        par.flex = 0.5 # share of repacking firms with flexible prices.
-        par.iota_0 = 500 # higher values implies greater adjustment costs.
+        par.mu_M_C = 0.30 # weight on imports in C, d
+        par.sigma_C = 0.26 # substitution between energy and consumption goods, y
+        par.mu_E_C = 0.15 # weight on energy in C, d
+        par.sigma_C_G = 2.67 # substitution between imports and domestic output, y (for ikke-energivarer)
+        par.mu_M_G = 0.30 # weight on imports in G, d 
+        par.sigma_G = 2.67 # substitution, y
+        par.mu_M_I = 0.35 # weight on imports in I, d
+        par.sigma_I = 1.5 # substitution, d
+        par.mu_M_X = 0.40 # weight on imports in X, d
+        par.sigma_X = 2.67 # substitution, y 
+        par.eta_C = 10 # price elasticity of demand for consumption. Higher values implies a more competitive market and a lower markup, d
+        par.iota_0 = 1 # higher values implies greater adjustment costs, y (pristræghed, rotemberg-omkostning)
 
         # g. foreign
-        par.sigma_F = 1.5 # substitution in export demand
+        par.sigma_F = 5.02 # substitution in export demand, y 
 
         # h. matching
-        par.sigma_m = 1.5 # curvature
+        par.sigma_m = 1 # curvature, y 
 
         # i. bargaining
-        par.gamma_w = 0.5 # wage persistence
+        par.gamma_w = 0.5 # wage persistence, y 
         par.phi = np.nan # bargaining power of firms (determined when finding steady state)
 
         # j. fixing variables
-        par.B_G_ss = 0.0 # government debt
+        par.B_G_ss = 0.0 # government debt, ok
 
     def allocate(self):
         """ allocate model """
