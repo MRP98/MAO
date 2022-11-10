@@ -211,13 +211,13 @@ class BabyMAKROModelClass(EconModelClass):
         # f. repacking
         par.mu_M_C = 0.30 # weight on imports in C, d
         par.sigma_C = 0.26 # substitution between energy and consumption goods, y
-        par.mu_E_C = 0.15 # weight on energy in C, d
+        par.mu_E_C = 0.3 # weight on energy in C, d
         par.sigma_C_G = 2.67 # substitution between imports and domestic output, y (for ikke-energivarer)
         par.mu_M_G = 0.30 # weight on imports in G, d 
         par.sigma_G = 2.67 # substitution, y
-        par.mu_M_I = 0.35 # weight on imports in I, d
+        par.mu_M_I = 0.30 # weight on imports in I, d
         par.sigma_I = 1.5 # substitution, d
-        par.mu_M_X = 0.40 # weight on imports in X, d
+        par.mu_M_X = 0.30 # weight on imports in X, d
         par.sigma_X = 2.67 # substitution, y 
         par.eta_C = 10 # price elasticity of demand for consumption. Higher values implies a more competitive market and a lower markup, d
         par.iota_0 = 1 # higher values implies greater adjustment costs, y (pristræghed, rotemberg-omkostning)
@@ -226,7 +226,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_F = 5.02 # substitution in export demand, y 
 
         # h. matching
-        par.sigma_m = 1 # curvature, y 
+        par.sigma_m = 1.01 # curvature, y 
 
         # i. bargaining
         par.gamma_w = 0.5 # wage persistence, y 
