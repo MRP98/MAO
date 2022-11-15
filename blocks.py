@@ -46,9 +46,6 @@ def CES_P(Pi,Pj,mui,sigma):
 
     return (part_i+part_j)**(1/(1-sigma))
 
-@nb.njit
-def CES_P_mp(eta,Pi,Pj,mui,sigma):
-
     muj = 1-mui
     markup = eta/(eta-1)
     
@@ -200,8 +197,8 @@ def production_firm(par,ini,ss,sol):
 
     # outputs
     Y = sol.Y
-    P_Y = sol.P_Y
     Y_KL = sol.Y_KL
+    P_Y_0 = sol.P_Y_0
     P_Y_KL = sol.P_Y_KL
 
     # targets
@@ -215,10 +212,35 @@ def production_firm(par,ini,ss,sol):
     P_Y_KL[:] = CES_P(r_K,r_ell,par.mu_K,par.sigma_Y_KL)
     
     Y[:] = CES_Y(E,Y_KL,par.mu_E,par.sigma_Y)
-    P_Y[:] = CES_P(r_E,P_Y_KL,par.mu_E,par.sigma_Y)
+    P_Y_0[:] = CES_P(r_E,P_Y_KL,par.mu_E,par.sigma_Y)
 
     FOC_K_ell[:] = K_lag/ell-par.mu_K/(1-par.mu_K)*(r_ell/r_K)**par.sigma_Y_KL
     FOC_E_Y_KL[:] = E/Y_KL-par.mu_E/(1-par.mu_E)*(P_Y_KL/r_E)**par.sigma_Y
+
+@nb.njit
+def philips_curve(par,ini,ss,sol):
+    
+    # inputs 
+    Y = sol.Y
+    P_Y = sol.P_Y
+    P_Y_0 = sol.P_Y_0
+
+    # targets 
+    output_price = sol.output_price
+
+    # evaluations
+    P_Y_lag1 = lag_n(ss.P_Y,P_Y,1)
+    P_Y_lag2 = lag_n(ss.P_Y,P_Y,2)
+    P_Y_lead = lead(P_Y,ss.P_Y)
+    Y_lead = lead(Y,ss.Y)
+
+    part_i = (P_Y/P_Y_lag1)/(P_Y_lag1/P_Y_lag2)
+    part_ii = (P_Y_lead/P_Y)/(P_Y/P_Y_lag1)
+
+    term_a = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_Y
+    term_b = 2*par.beta*(par.iota_0/(par.eta_C-1))*(part_ii-1)*part_ii*P_Y_lead*(Y_lead/Y)
+
+    output_price[:] = P_Y - P_Y_0 - term_a - term_b
 
 @nb.njit
 def bargaining(par,ini,ss,sol):
@@ -254,7 +276,7 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_M_I = sol.P_M_I
     P_M_X = sol.P_M_X
     P_M_G = sol.P_M_G
-    P_C_G = sol.P_C_G
+    P_M_C = sol.P_M_C
     P_E = sol.P_E
 
     # outputs
@@ -262,7 +284,10 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_X = sol.P_X
     P_G = sol.P_G
     P_C = sol.P_C
+    P_C_G = sol.P_C_G
 
+    # evaluations
+    P_C_G[:] = CES_P(P_M_C,P_Y,par.mu_M_C,par.sigma_C_G)
     P_C[:] = CES_P(P_E,P_C_G,par.mu_E_C,par.sigma_C)
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
@@ -438,8 +463,9 @@ def repacking_firms_components(par,ini,ss,sol):
     P_M_C = sol.P_M_C
     P_C = sol.P_C
     C = sol.C
-    C_G = sol.C_G
+
     P_C_G = sol.P_C_G
+    C_G = sol.C_G
     P_E = sol.P_E
 
     P_M_I = sol.P_M_I
@@ -471,42 +497,15 @@ def repacking_firms_components(par,ini,ss,sol):
     C_E[:] = CES_demand(par.mu_E_C,P_E,P_C,C,par.sigma_C)
     C_G[:] = CES_demand(1-par.mu_E_C,P_C_G,P_C,C,par.sigma_C)
     
-    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G)
+    C_M[:] = CES_demand(par.mu_M_C,P_M_C,P_C_G,C_G,par.sigma_C_G)
     I_M[:] = CES_demand(par.mu_M_I,P_M_I,P_I,I,par.sigma_I)
     X_M[:] = CES_demand(par.mu_M_X,P_M_X,P_X,X,par.sigma_X)
     G_M[:] = CES_demand(par.mu_M_G,P_M_G,P_G,G,par.sigma_X)
 
-    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C_G/(par.eta_C/(par.eta_C-1)),C_G,par.sigma_C_G)
+    C_Y[:] = CES_demand(1-par.mu_M_C,P_Y,P_C_G,C_G,par.sigma_C_G)
     I_Y[:] = CES_demand(1-par.mu_M_I,P_Y,P_I,I,par.sigma_I)
     X_Y[:] = CES_demand(1-par.mu_M_X,P_Y,P_X,X,par.sigma_X)
     G_Y[:] = CES_demand(1-par.mu_M_G,P_Y,P_G,G,par.sigma_G)
-
-@nb.njit
-def price_consumption_bundle(par,ini,ss,sol):
-    
-    # inputs 
-    P_M_C = sol.P_M_C
-    P_Y = sol.P_Y
-    C_G = sol.C_G
-    P_C_G = sol.P_C_G
-
-    # targets 
-    repacking_prices_C = sol.repacking_prices_C
-
-    # evaluations
-    P_C_G_lag1 = lag_n(ss.P_C_G,P_C_G,1)
-    P_C_G_lag2 = lag_n(ss.P_C_G,P_C_G,2)
-    P_C_G_lead = lead(P_C_G,ss.P_C_G)
-    C_G_lead = lead(C_G,ss.C_G)
-
-    part_i = (P_C_G/P_C_G_lag1)/(P_C_G_lag1/P_C_G_lag2)
-    part_ii = (P_C_G_lead/P_C_G)/(P_C_G/P_C_G_lag1)
-
-    term_a = CES_P_mp(par.eta_C,P_M_C,P_Y,par.mu_M_C,par.sigma_C_G)
-    term_b = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_C_G
-    term_c = 2*par.beta*(par.iota_0/(par.eta_C-1))*(part_ii-1)*part_ii*P_C_G_lead*(C_G_lead/C_G)
-
-    repacking_prices_C[:] = P_C_G - term_a - term_b - term_c
 
 @nb.njit
 def goods_market_clearing(par,ini,ss,sol):

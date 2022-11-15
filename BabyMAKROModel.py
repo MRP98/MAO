@@ -30,6 +30,7 @@ class BabyMAKROModelClass(EconModelClass):
             'household_search',
             'labor_agency',
             'production_firm',
+            'philips_curve',
             'bargaining',
             'repacking_firms_prices',
             'foreign_economy',
@@ -37,7 +38,6 @@ class BabyMAKROModelClass(EconModelClass):
             'government',
             'households_consumption',
             'repacking_firms_components',
-            'price_consumption_bundle',
             'goods_market_clearing',
         ]
         
@@ -65,7 +65,7 @@ class BabyMAKROModelClass(EconModelClass):
             'E',
             'r_K',
             'w',
-            'P_C_G',
+            'P_Y',
         ]
 
         # targets
@@ -76,7 +76,7 @@ class BabyMAKROModelClass(EconModelClass):
             'FOC_K_ell',
             'FOC_E_Y_KL',
             'mkt_clearing',
-            'repacking_prices_C',
+            'output_price',
         ]
 
         # all non-household variables
@@ -127,13 +127,14 @@ class BabyMAKROModelClass(EconModelClass):
             'P_M_X',
             'P_X',
             'P_Y',
+            'P_Y_0',
             'P_Y_KL',
             'pi_hh',
             'r_ell',
             'r_K',
             'r_E',
             'r_b',
-            'repacking_prices_C',
+            'output_price',
             'S',
             'Tax',
             'tau',

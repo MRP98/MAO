@@ -53,7 +53,7 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.P_M_X = 1.0
     
     # b. pricing in repacking firms
-    ss.P_C_G = blocks.CES_P_mp(par.eta_C,ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C_G)
+    ss.P_C_G = blocks.CES_P(ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C_G)
     ss.P_C = blocks.CES_P(ss.P_E,ss.P_C_G,par.mu_E_C,par.sigma_C)
     ss.P_G = blocks.CES_P(ss.P_M_G,ss.P_Y,par.mu_M_G,par.sigma_G)
     ss.P_I = blocks.CES_P(ss.P_M_I,ss.P_Y,par.mu_M_I,par.sigma_I)
@@ -152,16 +152,16 @@ def find_ss(par,ss,m_s,do_print=True):
     if do_print: print(f'{ss.B = :.2f}')
 
     # k. CES demand in packing firms
-    ss.C_E = blocks.CES_demand(par.mu_E_C,ss.P_E,ss.P_C,ss.C, par.sigma_C)
-    ss.C_G = blocks.CES_demand((1-par.mu_E_C),ss.P_C_G,ss.P_C,ss.C, par.sigma_C)
-    ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C_G/(par.eta_C/(par.eta_C-1)),ss.C_G, par.sigma_C_G)
-    ss.C_Y = blocks.CES_demand((1-par.mu_M_C),ss.P_Y,ss.P_C_G/(par.eta_C/(par.eta_C-1)),ss.C_G, par.sigma_C_G)
+    ss.C_E = blocks.CES_demand(par.mu_E_C,ss.P_E,ss.P_C,ss.C,par.sigma_C)
+    ss.C_G = blocks.CES_demand((1-par.mu_E_C),ss.P_C_G,ss.P_C,ss.C,par.sigma_C)
+    ss.C_M = blocks.CES_demand(par.mu_M_C,ss.P_M_C,ss.P_C_G,ss.C_G,par.sigma_C_G)
+    ss.C_Y = blocks.CES_demand((1-par.mu_M_C),ss.P_Y,ss.P_C_G,ss.C_G,par.sigma_C_G)
 
-    ss.G_M = blocks.CES_demand(par.mu_M_G,ss.P_M_G,ss.P_G,ss.G, par.sigma_G)   
-    ss.G_Y = blocks.CES_demand((1-par.mu_M_G),ss.P_Y,ss.P_G,ss.G, par.sigma_G)
+    ss.G_M = blocks.CES_demand(par.mu_M_G,ss.P_M_G,ss.P_G,ss.G,par.sigma_G)   
+    ss.G_Y = blocks.CES_demand((1-par.mu_M_G),ss.P_Y,ss.P_G,ss.G,par.sigma_G)
 
-    ss.I_M = blocks.CES_demand(par.mu_M_I,ss.P_M_I,ss.P_I,ss.I, par.sigma_I)     
-    ss.I_Y = blocks.CES_demand((1-par.mu_M_I),ss.P_Y,ss.P_I,ss.I, par.sigma_I)    
+    ss.I_M = blocks.CES_demand(par.mu_M_I,ss.P_M_I,ss.P_I,ss.I,par.sigma_I)     
+    ss.I_Y = blocks.CES_demand((1-par.mu_M_I),ss.P_Y,ss.P_I,ss.I,par.sigma_I)    
 
     # m. market clearing
     ss.X_Y = ss.Y - (ss.C_Y+ss.I_Y+ss.G_Y)
