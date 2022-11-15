@@ -241,32 +241,6 @@ def philips_curve(par,ini,ss,sol):
     term_b = 2*par.beta*(par.iota_0/(par.eta_C-1))*(part_ii-1)*part_ii*P_Y_lead*(Y_lead/Y)
 
     output_price[:] = P_Y - P_Y_0 - term_a - term_b
-
-@nb.njit
-def bargaining(par,ini,ss,sol):
-
-    # inputs
-    w = sol.w
-    Y = sol.Y
-    ell = sol.ell
-    v = sol.v
-    S = sol.S
-    r_ell = sol.r_ell
-
-    # outputs
-    MPL = sol.MPL
-    w_ast = sol.w_ast
-
-    # targets
-    bargaining_cond = sol.bargaining_cond
-
-    # evaluations
-    w_lag = lag(ini.w,w)
-    w_U = par.U_B*ss.w
-    MPL[:] = ((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
-    w_ast[:] = w_U+ par.phi*( r_ell - w_U + (v/S) * par.kappa_L)
-
-    bargaining_cond[:] = w - (par.gamma_w*w_lag + (1-par.gamma_w)*w_ast)
         
 @nb.njit
 def repacking_firms_prices(par,ini,ss,sol):
@@ -292,6 +266,33 @@ def repacking_firms_prices(par,ini,ss,sol):
     P_I[:] = CES_P(P_M_I,P_Y,par.mu_M_I,par.sigma_I)
     P_X[:] = CES_P(P_M_X,P_Y,par.mu_M_X,par.sigma_X)
     P_G[:] = CES_P(P_M_G,P_Y,par.mu_M_G,par.sigma_G)
+
+@nb.njit
+def bargaining(par,ini,ss,sol):
+
+    # inputs
+    w = sol.w
+    Y = sol.Y
+    ell = sol.ell
+    v = sol.v
+    S = sol.S
+    P_C = sol.P_C
+    r_ell = sol.r_ell
+
+    # outputs
+    MPL = sol.MPL
+    w_ast = sol.w_ast
+
+    # targets
+    bargaining_cond = sol.bargaining_cond
+
+    # evaluations
+    w_lag = lag(ini.w,w)
+    w_U = par.U_B*ss.w
+    MPL[:] = ((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
+    w_ast[:] = par.phi*(r_ell + (v/S)*par.kappa_L) + (1-par.phi)*(w_U + par.xi*((1+P_C - ss.P_C)**2-1))
+
+    bargaining_cond[:] = w - (par.gamma_w*w_lag + (1-par.gamma_w)*w_ast)
 
 @nb.njit
 def foreign_economy(par,ini,ss,sol):

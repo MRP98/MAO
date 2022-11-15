@@ -230,6 +230,7 @@ class BabyMAKROModelClass(EconModelClass):
         par.sigma_m = 1.01 # curvature, y 
 
         # i. bargaining
+        par.xi = 1 # degree of compensation
         par.gamma_w = 0.5 # wage persistence, y 
         par.phi = np.nan # bargaining power of firms (determined when finding steady state)
 
