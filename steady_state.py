@@ -44,15 +44,13 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.m_s = m_s
 
     # a. price normalizations
-    ss.P_E = 1.0
-    ss.P_Y = 1.0
-    ss.P_F = 1.0
-    ss.P_M_C = 1.0
-    ss.P_M_G = 1.0
-    ss.P_M_I = 1.0
-    ss.P_M_X = 1.0
-    
-    ss.P_Y_0 = ss.P_Y/(par.eta_C/(par.eta_C-1))
+    ss.P_E = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_Y = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_F = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_M_C = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_M_G = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_M_I = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_M_X = 1.0*(par.eta_C/(par.eta_C-1))
 
     # b. pricing in repacking firms
     ss.P_C_G = blocks.CES_P(ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C_G)
@@ -106,6 +104,7 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.r_ell = ((1-par.mu_K*(ss.r_K)**(1-par.sigma_Y_KL))/(1-par.mu_K))**(1/(1-par.sigma_Y_KL))
     ss.P_Y_KL = blocks.CES_P(ss.r_K,ss.r_ell,par.mu_K,par.sigma_Y_KL)
     ss.r_E = ((1-par.mu_E*(ss.P_Y_KL)**(1-par.sigma_Y))/(1-par.mu_E))**(1/(1-par.sigma_Y))
+    ss.P_Y_0 = blocks.CES_P(ss.r_E,ss.P_Y_KL,par.mu_E,par.sigma_Y)
 
     if do_print: print(f'{ss.r_ell = :.2f}')
     if do_print: print(f'{ss.r_E = :.2f}')

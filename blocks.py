@@ -291,6 +291,7 @@ def bargaining(par,ini,ss,sol):
     w_U = par.U_B*ss.w
     MPL[:] = ((1-par.mu_K)*Y/ell)**(1/par.sigma_Y)
     w_ast[:] = par.phi*(r_ell + (v/S)*par.kappa_L) + (1-par.phi)*(w_U + par.xi*((1+P_E - ss.P_E)**2-1))
+    # w_ast[:] = par.phi*(r_ell + (v/S)*par.kappa_L) + (1-par.phi)*(w_U + (1+P_E - ss.P_E)**par.xi-1)
 
     bargaining_cond[:] = w - (par.gamma_w*w_lag + (1-par.gamma_w)*w_ast)
 
