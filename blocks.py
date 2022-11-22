@@ -240,7 +240,7 @@ def philips_curve(par,ini,ss,sol):
     term_a = -(par.iota_0/(par.eta_C-1))*(part_i-1)*part_i*P_Y
     term_b = 2*par.beta*(par.iota_0/(par.eta_C-1))*(part_ii-1)*part_ii*P_Y_lead*(Y_lead/Y)
 
-    output_price[:] = P_Y - P_Y_0 - term_a - term_b
+    output_price[:] = P_Y - (par.eta_C/(par.eta_C-1))*P_Y_0 - term_a - term_b
 
 @nb.njit
 def bargaining(par,ini,ss,sol):

@@ -44,13 +44,13 @@ def find_ss(par,ss,m_s,do_print=True):
     ss.m_s = m_s
 
     # a. price normalizations
-    ss.P_E = 1.0
-    ss.P_Y = 1.0
-    ss.P_F = 1.0
-    ss.P_M_C = 1.0
-    ss.P_M_G = 1.0
-    ss.P_M_I = 1.0
-    ss.P_M_X = 1.0
+    ss.P_E = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_Y = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_F = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_M_C = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_M_G = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_M_I = 1.0*(par.eta_C/(par.eta_C-1))
+    ss.P_M_X = 1.0*(par.eta_C/(par.eta_C-1))
     
     # b. pricing in repacking firms
     ss.P_C_G = blocks.CES_P(ss.P_M_C,ss.P_Y,par.mu_M_C,par.sigma_C_G)
