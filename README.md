@@ -1,6 +1,9 @@
 # BabyMAKRO
 
-***Disclaimer: Work-in-progress. Beware of errors!***
+***Model used for Bachelor's thesis, Nov. 2022.***
+
+M. Berg, O. Ding and A. Laursen.
+Based on J. Druedahl's [BabyMAKRO](https://github.com/JeppeDruedahl/BabyMAKRO).
 
 **Documentation:** See `BabyMAKRO.pdf`.
 
