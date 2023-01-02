@@ -5,8 +5,6 @@
 M. Berg, O. Ding and A. Laursen.
 Based on J. Druedahl's [BabyMAKRO](https://github.com/JeppeDruedahl/BabyMAKRO).
 
-**Documentation:** See `BabyMAKRO.pdf`.
-
 **Dependencies:**
 
 ```
